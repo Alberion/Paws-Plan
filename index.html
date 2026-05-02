@@ -291,16 +291,16 @@
                 </section>
                 <section className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   {[
-                    { icon: Sparkles, title: 'Readiness Quiz', desc: 'Is now actually the right time?', color: 'amber' },
-                    { icon: PawPrint, title: 'Breed Compare', desc: `${breeds.length} breeds, 35+ traits`, color: 'emerald' },
-                    { icon: BookOpen, title: 'The Roadmap', desc: 'Every step, in order', color: 'sky' },
-                    { icon: Calculator, title: 'True Costs', desc: `In ${c.currencyCode} for ${c.name}`, color: 'rose' },
+                    { icon: Sparkles, title: 'Readiness Quiz', desc: 'Is now actually the right time?', color: 'amber', section: 'quiz' },
+                    { icon: PawPrint, title: 'Breed Compare', desc: `${breeds.length} breeds, 35+ traits`, color: 'emerald', section: 'compare' },
+                    { icon: BookOpen, title: 'The Roadmap', desc: 'Every step, in order', color: 'sky', section: 'roadmap' },
+                    { icon: Calculator, title: 'True Costs', desc: `In ${c.currencyCode} for ${c.name}`, color: 'rose', section: 'cost' },
                   ].map(card => (
-                    <div key={card.title} className="bg-white rounded-2xl p-6 border border-stone-200 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+                    <button key={card.title} onClick={() => setActiveSection(card.section)} className="bg-white rounded-2xl p-6 border border-stone-200 hover:shadow-lg hover:-translate-y-0.5 hover:border-stone-300 transition-all text-left group">
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${card.color === 'amber' ? 'bg-amber-100 text-amber-700' : card.color === 'emerald' ? 'bg-emerald-100 text-emerald-700' : card.color === 'sky' ? 'bg-sky-100 text-sky-700' : 'bg-rose-100 text-rose-700'}`}><card.icon size={20} /></div>
-                      <div className="font-semibold text-stone-900 mb-1">{card.title}</div>
+                      <div className="font-semibold text-stone-900 mb-1 flex items-center gap-1">{card.title} <ChevronRight size={16} className="text-stone-400 group-hover:text-stone-600 group-hover:translate-x-0.5 transition" /></div>
                       <div className="text-sm text-stone-600">{card.desc}</div>
-                    </div>
+                    </button>
                   ))}
                 </section>
                 <section className="bg-gradient-to-br from-emerald-50 to-amber-50 rounded-3xl p-8 border border-emerald-100">
