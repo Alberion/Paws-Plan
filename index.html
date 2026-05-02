@@ -264,6 +264,8 @@
       const [searchTerm, setSearchTerm] = useState('');
       const [sortBy, setSortBy] = useState('name-asc');
       const [costBreedIds, setCostBreedIds] = useState(['lab']);
+      const [costSectionsOpen, setCostSectionsOpen] = useState({ setup: true, monthly: true, annual: true });
+      const toggleCostSection = (k) => setCostSectionsOpen(prev => ({ ...prev, [k]: !prev[k] }));
       const [quizAnswers, setQuizAnswers] = useState({});
       const c = countries[country];
 
@@ -626,33 +628,57 @@
                       <div className="bg-gradient-to-br from-amber-500 to-amber-700 text-white rounded-2xl p-5"><div className="text-amber-100 text-sm">Annual</div><div className="text-3xl font-bold mt-1">{formatCost(costBreakdowns[0].annual, country)}</div><div className="text-amber-100 text-xs mt-1">incl. preventive vet</div></div>
                     </div>
                   )}
-                  <div className="bg-white rounded-2xl border border-stone-200 mb-6 overflow-hidden">
-                    <div className="px-4 sm:px-5 py-3 border-b border-stone-200 bg-stone-50"><h3 className="font-semibold text-stone-900">One-off setup</h3></div>
-                    <div className="divide-y divide-stone-100">
-                      <CostRow label="Purchase / adoption fee" getValue={cb => cb.b.purchasePrice} />
-                      <CostRow label="Setup essentials" sub={() => 'Crate, bed, bowls, lead, microchip, first vaccinations'} getValue={cb => cb.setupExtras} />
-                      <div className="bg-stone-50"><CostRow label="Total upfront" getValue={cb => cb.initial} bold /></div>
-                    </div>
-                  </div>
-                  <div className="bg-white rounded-2xl border border-stone-200 mb-6 overflow-hidden">
-                    <div className="px-4 sm:px-5 py-3 border-b border-stone-200 bg-stone-50"><h3 className="font-semibold text-stone-900">Monthly costs</h3></div>
-                    <div className="divide-y divide-stone-100">
-                      <CostRow label="Pet insurance" getValue={cb => cb.insurance} suffix="/mo" />
-                      <CostRow label="Food" getValue={cb => cb.food} suffix="/mo" />
-                      <CostRow label="Grooming" getValue={cb => cb.grooming} suffix="/mo" />
-                      <CostRow label="Treats, toys, accessories" getValue={cb => cb.treats} suffix="/mo" />
-                      {costBreakdowns.some(cb => cb.walker > 0) && (
-                        <CostRow label="Dog walker / daycare" sub={() => 'Recommended where alone-tolerance is low'} getValue={cb => cb.walker} suffix="/mo" />
-                      )}
-                      <div className="bg-stone-50"><CostRow label="Monthly total" getValue={cb => cb.monthly} suffix="/mo" bold /></div>
-                    </div>
-                  </div>
-                  <div className="bg-white rounded-2xl border border-stone-200 mb-6 overflow-hidden">
-                    <div className="px-4 sm:px-5 py-3 border-b border-stone-200 bg-stone-50"><h3 className="font-semibold text-stone-900">Annual extras</h3></div>
-                    <div className="divide-y divide-stone-100">
-                      <CostRow label="Preventive vet care" sub={() => 'Yearly checkup, vaccinations, flea/tick/worm — scaled to breed-typical vet costs'} getValue={cb => cb.vetAnnual} suffix="/yr" />
-                    </div>
-                  </div>
+                  {(() => {
+                    const Section = ({ k, title, totalGetter, suffix, children }) => {
+                      const open = costSectionsOpen[k];
+                      return (
+                        <div className="bg-white rounded-2xl border border-stone-200 mb-4 overflow-hidden">
+                          <button onClick={() => toggleCostSection(k)} className="w-full px-4 sm:px-5 py-3 border-b border-stone-200 bg-stone-50 hover:bg-stone-100 transition text-left">
+                            {isMulti ? (
+                              <div className="grid gap-2 items-center" style={rowStyle}>
+                                <div className="flex items-center justify-between gap-2 min-w-0">
+                                  <h3 className="font-semibold text-stone-900 truncate">{title}</h3>
+                                  <ChevronRight size={18} className={`text-stone-400 transition-transform flex-shrink-0 ${open ? 'rotate-90' : ''}`} />
+                                </div>
+                                {costBreakdowns.map((cb, i) => (
+                                  <div key={i} className="text-right font-bold text-stone-900 whitespace-nowrap">{formatCost(totalGetter(cb), country)}{suffix}</div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="flex items-center justify-between gap-3">
+                                <h3 className="font-semibold text-stone-900">{title}</h3>
+                                <div className="flex items-center gap-3">
+                                  <span className="font-bold text-stone-900 whitespace-nowrap">{formatCost(totalGetter(costBreakdowns[0]), country)}{suffix}</span>
+                                  <ChevronRight size={18} className={`text-stone-400 transition-transform ${open ? 'rotate-90' : ''}`} />
+                                </div>
+                              </div>
+                            )}
+                          </button>
+                          {open && <div className="divide-y divide-stone-100">{children}</div>}
+                        </div>
+                      );
+                    };
+                    return (
+                      <>
+                        <Section k="setup" title="One-off setup" totalGetter={cb => cb.initial}>
+                          <CostRow label="Purchase / adoption fee" getValue={cb => cb.b.purchasePrice} />
+                          <CostRow label="Setup essentials" sub={() => 'Crate, bed, bowls, lead, microchip, first vaccinations'} getValue={cb => cb.setupExtras} />
+                        </Section>
+                        <Section k="monthly" title="Monthly costs" totalGetter={cb => cb.monthly} suffix="/mo">
+                          <CostRow label="Pet insurance" getValue={cb => cb.insurance} suffix="/mo" />
+                          <CostRow label="Food" getValue={cb => cb.food} suffix="/mo" />
+                          <CostRow label="Grooming" getValue={cb => cb.grooming} suffix="/mo" />
+                          <CostRow label="Treats, toys, accessories" getValue={cb => cb.treats} suffix="/mo" />
+                          {costBreakdowns.some(cb => cb.walker > 0) && (
+                            <CostRow label="Dog walker / daycare" sub={() => 'Recommended where alone-tolerance is low'} getValue={cb => cb.walker} suffix="/mo" />
+                          )}
+                        </Section>
+                        <Section k="annual" title="Annual extras" totalGetter={cb => cb.vetAnnual} suffix="/yr">
+                          <CostRow label="Preventive vet care" sub={() => 'Yearly checkup, vaccinations, flea/tick/worm — scaled to breed-typical vet costs'} getValue={cb => cb.vetAnnual} suffix="/yr" />
+                        </Section>
+                      </>
+                    );
+                  })()}
                   <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
                     <div className="flex items-start gap-3">
                       <AlertCircle className="text-amber-700 flex-shrink-0 mt-0.5" size={20} />
