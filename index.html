@@ -262,7 +262,7 @@
       const [filters, setFilters] = useState(defaultFilters);
       const [searchTerm, setSearchTerm] = useState('');
       const [sortBy, setSortBy] = useState('name-asc');
-      const [costInputs, setCostInputs] = useState({ insurance: 50, foodMonthly: 50, grooming: 30, treats: 20, walker: 0, initial: 800, lifespan: 12 });
+      const [costBreedId, setCostBreedId] = useState('lab');
       const [quizAnswers, setQuizAnswers] = useState({});
       const c = countries[country];
 
@@ -304,9 +304,29 @@
       });
 
       const compareBreeds = breeds.filter(b => selectedBreeds.includes(b.id));
-      const totalMonthly = costInputs.insurance + costInputs.foodMonthly + costInputs.grooming + costInputs.treats + costInputs.walker;
-      const totalAnnual = totalMonthly * 12 + 300;
-      const lifetimeCost = costInputs.initial + (totalAnnual * costInputs.lifespan);
+
+      const costBreed = breeds.find(b => b.id === costBreedId) || breeds[0];
+      const costBreakdown = useMemo(() => {
+        const b = costBreed;
+        const foodMap = { 'Low': 30, 'Surprisingly low': 30, 'Low-Medium': 40, 'Medium': 55, 'Medium-High': 75, 'High': 100, 'Enormous': 160, 'Variable': 60 };
+        const treatsBySize = { 'Toy': 12, 'Small': 12, 'Small-Medium': 16, 'Medium': 20, 'Medium-Large': 25, 'Large': 28, 'Giant': 35, 'Variable': 18 };
+        const vetByBand = { 1: 200, 2: 300, 3: 450, 4: 650, 5: 900 };
+        const walkerByAlone = { 1: 280, 2: 180 };
+        const lifespanMatch = b.lifespan.match(/(\d+)\s*-\s*(\d+)/);
+        const lifespanYears = lifespanMatch ? parseInt(lifespanMatch[2]) : 12;
+        const setupExtras = 300;
+        const food = foodMap[b.foodConsumption] || 55;
+        const treats = treatsBySize[b.size] || 18;
+        const walker = walkerByAlone[b.aloneTolerance] || 0;
+        const insurance = b.insuranceBand;
+        const grooming = b.groomingCost;
+        const vetAnnual = vetByBand[b.vetCosts] || 400;
+        const monthly = insurance + food + grooming + treats + walker;
+        const annual = monthly * 12 + vetAnnual;
+        const initial = b.purchasePrice + setupExtras;
+        const lifetime = initial + annual * lifespanYears;
+        return { b, lifespanYears, setupExtras, food, treats, walker, insurance, grooming, vetAnnual, monthly, annual, initial, lifetime };
+      }, [costBreedId]);
 
       const NavBtn = ({ id, icon: I, label }) => (
         <button onClick={() => { setActiveSection(id); setDrawerOpen(false); }} className={`flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition ${activeSection === id ? 'bg-emerald-600 text-white shadow-md' : 'text-stone-700 hover:bg-stone-100'}`}>
@@ -544,43 +564,59 @@
 
             {activeSection === 'cost' && (
               <div className="max-w-3xl mx-auto">
-                <h2 className="text-3xl font-bold text-stone-900 mb-2">True cost calculator</h2>
-                <p className="text-stone-600 mb-8">Adjust the sliders to see your realistic costs in {c.currencyCode} for {c.name}.</p>
-                <div className="bg-white rounded-2xl p-6 border border-stone-200 mb-6">
-                  <h3 className="font-semibold text-stone-900 mb-4">One-off & setup costs</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex justify-between text-sm mb-1"><span className="text-stone-700">Initial setup</span><span className="font-semibold">{formatCost(costInputs.initial, country)}</span></div>
-                      <input type="range" min="200" max="5000" step="100" value={costInputs.initial} onChange={e => setCostInputs({...costInputs, initial: +e.target.value})} className="w-full accent-emerald-600" />
-                      <div className="text-xs text-stone-500">Purchase/adoption fee, crate, bed, lead, bowls, initial vet/insurance</div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-sm mb-1"><span className="text-stone-700">Expected lifespan</span><span className="font-semibold">{costInputs.lifespan} years</span></div>
-                      <input type="range" min="8" max="16" step="1" value={costInputs.lifespan} onChange={e => setCostInputs({...costInputs, lifespan: +e.target.value})} className="w-full accent-emerald-600" />
-                    </div>
+                <h2 className="text-3xl font-bold text-stone-900 mb-2">True cost of owning a dog</h2>
+                <p className="text-stone-600 mb-6">Pick a breed to see realistic costs in {c.currencyCode} for {c.name}, based on its size, food needs, grooming, insurance band, and typical vet care.</p>
+                <div className="bg-white rounded-2xl p-4 border border-stone-200 mb-6 flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-lg overflow-hidden bg-stone-100 flex-shrink-0"><BreedImage breedId={costBreed.id} className="w-full h-full" /></div>
+                  <div className="flex-1 min-w-0">
+                    <label className="text-xs text-stone-500 block mb-0.5">Selected breed</label>
+                    <select value={costBreedId} onChange={e => setCostBreedId(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm bg-white font-medium">
+                      {[...breeds].sort((a,b) => a.name.localeCompare(b.name)).map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                    </select>
                   </div>
                 </div>
-                <div className="bg-white rounded-2xl p-6 border border-stone-200 mb-6">
-                  <h3 className="font-semibold text-stone-900 mb-4">Monthly costs</h3>
-                  <div className="space-y-4">
-                    {[{ k: 'insurance', l: 'Pet insurance', mn: 0, mx: 150, h: 'Lifetime cover recommended' }, { k: 'foodMonthly', l: 'Food', mn: 15, mx: 150, h: 'Varies by breed size' }, { k: 'grooming', l: 'Grooming (avg/mo)', mn: 0, mx: 100, h: 'Some breeds need pro every 6-8 weeks' }, { k: 'treats', l: 'Treats, toys, accessories', mn: 5, mx: 60, h: 'Toys wear out, treats run out' }, { k: 'walker', l: 'Dog walker / daycare', mn: 0, mx: 400, h: 'Hire help if you work long hours' }].map(f => (
-                      <div key={f.k}>
-                        <div className="flex justify-between text-sm mb-1"><span className="text-stone-700">{f.l}</span><span className="font-semibold">{formatCost(costInputs[f.k], country)}/mo</span></div>
-                        <input type="range" min={f.mn} max={f.mx} step="5" value={costInputs[f.k]} onChange={e => setCostInputs({...costInputs, [f.k]: +e.target.value})} className="w-full accent-emerald-600" />
-                        <div className="text-xs text-stone-500">{f.h}</div>
-                      </div>
-                    ))}
+                <div className="grid sm:grid-cols-3 gap-3 mb-6">
+                  <div className="bg-gradient-to-br from-emerald-500 to-emerald-700 text-white rounded-2xl p-5"><div className="text-emerald-100 text-sm">Monthly</div><div className="text-3xl font-bold mt-1">{formatCost(costBreakdown.monthly, country)}</div><div className="text-emerald-100 text-xs mt-1">recurring costs</div></div>
+                  <div className="bg-gradient-to-br from-amber-500 to-amber-700 text-white rounded-2xl p-5"><div className="text-amber-100 text-sm">Annual</div><div className="text-3xl font-bold mt-1">{formatCost(costBreakdown.annual, country)}</div><div className="text-amber-100 text-xs mt-1">incl. preventive vet</div></div>
+                  <div className="bg-gradient-to-br from-rose-500 to-rose-700 text-white rounded-2xl p-5"><div className="text-rose-100 text-sm">Lifetime ({costBreakdown.lifespanYears} yrs)</div><div className="text-3xl font-bold mt-1">{formatCost(costBreakdown.lifetime, country)}</div><div className="text-rose-100 text-xs mt-1">excl. emergencies</div></div>
+                </div>
+                <div className="bg-white rounded-2xl border border-stone-200 mb-6 overflow-hidden">
+                  <div className="px-5 py-3 border-b border-stone-200 bg-stone-50">
+                    <h3 className="font-semibold text-stone-900">One-off setup</h3>
+                  </div>
+                  <div className="divide-y divide-stone-100">
+                    <div className="flex items-baseline justify-between px-5 py-3"><div><div className="text-sm text-stone-800">Purchase / adoption fee</div><div className="text-xs text-stone-500">Typical price for this breed (rescue often far less)</div></div><div className="font-semibold text-stone-900">{formatCost(costBreed.purchasePrice, country)}</div></div>
+                    <div className="flex items-baseline justify-between px-5 py-3"><div><div className="text-sm text-stone-800">Setup essentials</div><div className="text-xs text-stone-500">Crate, bed, bowls, lead, microchip, first vaccinations</div></div><div className="font-semibold text-stone-900">{formatCost(costBreakdown.setupExtras, country)}</div></div>
+                    <div className="flex items-baseline justify-between px-5 py-3 bg-stone-50"><div className="text-sm font-semibold text-stone-900">Total upfront</div><div className="font-bold text-stone-900">{formatCost(costBreakdown.initial, country)}</div></div>
                   </div>
                 </div>
-                <div className="grid sm:grid-cols-3 gap-4 mb-6">
-                  <div className="bg-gradient-to-br from-emerald-500 to-emerald-700 text-white rounded-2xl p-5"><div className="text-emerald-100 text-sm">Monthly</div><div className="text-3xl font-bold mt-1">{formatCost(totalMonthly, country)}</div></div>
-                  <div className="bg-gradient-to-br from-amber-500 to-amber-700 text-white rounded-2xl p-5"><div className="text-amber-100 text-sm">Annual</div><div className="text-3xl font-bold mt-1">{formatCost(totalAnnual, country)}</div></div>
-                  <div className="bg-gradient-to-br from-rose-500 to-rose-700 text-white rounded-2xl p-5"><div className="text-rose-100 text-sm">Lifetime</div><div className="text-3xl font-bold mt-1">{formatCost(lifetimeCost, country)}</div></div>
+                <div className="bg-white rounded-2xl border border-stone-200 mb-6 overflow-hidden">
+                  <div className="px-5 py-3 border-b border-stone-200 bg-stone-50">
+                    <h3 className="font-semibold text-stone-900">Monthly costs</h3>
+                  </div>
+                  <div className="divide-y divide-stone-100">
+                    <div className="flex items-baseline justify-between px-5 py-3"><div><div className="text-sm text-stone-800">Pet insurance</div><div className="text-xs text-stone-500">Lifetime cover band for this breed</div></div><div className="font-semibold text-stone-900">{formatCost(costBreakdown.insurance, country)}/mo</div></div>
+                    <div className="flex items-baseline justify-between px-5 py-3"><div><div className="text-sm text-stone-800">Food</div><div className="text-xs text-stone-500">{costBreed.foodConsumption} consumption ({costBreed.size.toLowerCase()})</div></div><div className="font-semibold text-stone-900">{formatCost(costBreakdown.food, country)}/mo</div></div>
+                    <div className="flex items-baseline justify-between px-5 py-3"><div><div className="text-sm text-stone-800">Grooming</div><div className="text-xs text-stone-500">{costBreed.groomingFreq}</div></div><div className="font-semibold text-stone-900">{formatCost(costBreakdown.grooming, country)}/mo</div></div>
+                    <div className="flex items-baseline justify-between px-5 py-3"><div><div className="text-sm text-stone-800">Treats, toys, accessories</div><div className="text-xs text-stone-500">Scaled to size</div></div><div className="font-semibold text-stone-900">{formatCost(costBreakdown.treats, country)}/mo</div></div>
+                    {costBreakdown.walker > 0 && (
+                      <div className="flex items-baseline justify-between px-5 py-3"><div><div className="text-sm text-stone-800">Dog walker / daycare <span className="text-xs text-amber-700 font-medium">(recommended)</span></div><div className="text-xs text-stone-500">Low alone-tolerance — needs midday company</div></div><div className="font-semibold text-stone-900">{formatCost(costBreakdown.walker, country)}/mo</div></div>
+                    )}
+                    <div className="flex items-baseline justify-between px-5 py-3 bg-stone-50"><div className="text-sm font-semibold text-stone-900">Monthly total</div><div className="font-bold text-stone-900">{formatCost(costBreakdown.monthly, country)}/mo</div></div>
+                  </div>
+                </div>
+                <div className="bg-white rounded-2xl border border-stone-200 mb-6 overflow-hidden">
+                  <div className="px-5 py-3 border-b border-stone-200 bg-stone-50">
+                    <h3 className="font-semibold text-stone-900">Annual extras</h3>
+                  </div>
+                  <div className="divide-y divide-stone-100">
+                    <div className="flex items-baseline justify-between px-5 py-3"><div><div className="text-sm text-stone-800">Preventive vet care</div><div className="text-xs text-stone-500">Yearly checkup, vaccinations, flea/tick/worm — adjusted for breed-typical vet costs ({'£'.repeat(costBreed.vetCosts)})</div></div><div className="font-semibold text-stone-900">{formatCost(costBreakdown.vetAnnual, country)}/yr</div></div>
+                  </div>
                 </div>
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
                   <div className="flex items-start gap-3">
                     <AlertCircle className="text-amber-700 flex-shrink-0 mt-0.5" size={20} />
-                    <div className="text-sm text-amber-900"><strong>Reality check:</strong> This doesn't include emergency vet bills (which can reach {formatCost(10000, country)}+), boarding, training classes, or end-of-life care. Lifetime costs commonly exceed {formatCost(20000, country)}.</div>
+                    <div className="text-sm text-amber-900"><strong>Reality check:</strong> These figures don't include emergency vet bills (which can reach {formatCost(10000, country)}+ for surgeries), boarding, training classes, or end-of-life care. {costBreed.vetCosts >= 4 ? `${costBreed.name}s have higher-than-average vet costs — budget extra for the conditions listed in their health profile.` : 'Set aside a vet emergency fund regardless of breed.'}</div>
                   </div>
                 </div>
               </div>
