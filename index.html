@@ -583,9 +583,10 @@
                 <div className="max-w-5xl mx-auto">
                   <h2 className="text-3xl font-bold text-stone-900 mb-2">True cost of owning a dog</h2>
                   <p className="text-stone-600 mb-6">Compare up to three breeds. Costs in {c.currencyCode} for {c.name}, derived from each breed's size, food needs, grooming, insurance band, and typical vet care.</p>
-                  <div className="grid gap-3 mb-6" style={{gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`}}>
+                  <div className="grid gap-2 mb-6 items-center" style={gridStyle}>
+                    <div className="hidden sm:block"></div>
                     {costBreakdowns.map((cb, idx) => (
-                      <div key={idx} className="bg-white rounded-2xl p-3 border border-stone-200 flex items-center gap-2 relative">
+                      <div key={idx} className="bg-white rounded-2xl p-3 border border-stone-200 flex items-center gap-2 relative min-w-0">
                         <div className="w-12 h-12 rounded-lg overflow-hidden bg-stone-100 flex-shrink-0"><BreedImage breedId={cb.b.id} className="w-full h-full" /></div>
                         <div className="flex-1 min-w-0 pr-5">
                           <select value={cb.b.id} onChange={e => setCostBreedAt(idx, e.target.value)} className="w-full px-2 py-1.5 rounded-lg border border-stone-200 text-sm bg-white font-medium">
@@ -598,12 +599,13 @@
                       </div>
                     ))}
                     {costBreakdowns.length < 3 && (
-                      <button onClick={addCostBreed} className="bg-stone-50 hover:bg-stone-100 border-2 border-dashed border-stone-300 rounded-2xl p-3 flex items-center justify-center gap-2 text-sm font-medium text-stone-600">
+                      <button onClick={addCostBreed} className="bg-stone-50 hover:bg-stone-100 border-2 border-dashed border-stone-300 rounded-2xl p-3 flex items-center justify-center gap-2 text-sm font-medium text-stone-600 self-stretch">
                         <Plus size={16} /> Add breed
                       </button>
                     )}
                   </div>
-                  <div className="grid gap-3 mb-6" style={{gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`}}>
+                  <div className="grid gap-2 mb-6 items-stretch" style={gridStyle}>
+                    <div className="hidden sm:block"></div>
                     {costBreakdowns.map((cb, i) => (
                       <div key={i} className="bg-gradient-to-br from-rose-500 to-rose-700 text-white rounded-2xl p-4">
                         <div className="text-rose-100 text-xs">Lifetime ({cb.lifespanYears} yrs)</div>
