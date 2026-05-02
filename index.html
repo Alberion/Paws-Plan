@@ -53,57 +53,55 @@
       IT: { name: 'Italy', flag: '🇮🇹', currency: '€', currencyCode: 'EUR', rescues: ['ENPA', 'LIPU', 'Local canili'], multiplier: 1, notes: 'Anagrafe canina (national dog registry) is mandatory. Strong rescue culture.' },
     };
 
-    // ============ IMAGES (Wikipedia Commons via Special:FilePath) ============
-    const wikiImg = (filename) => `https://commons.wikimedia.org/wiki/Special:FilePath/${filename}?width=400`;
-
+    // ============ IMAGES (Wikimedia Commons CDN — direct thumbnail URLs) ============
     const breedImages = {
-      'lab': wikiImg('Labrador_Retriever_portrait.jpg'),
-      'goldie': wikiImg('Golden_Retriever_Carlos_(10581910556).jpg'),
-      'cavalier': wikiImg('Cavalier_King_Charles_Spaniel_tricolor.jpg'),
-      'cockapoo': wikiImg('Cockapoo_dog.jpg'),
-      'goldendoodle': wikiImg('Apricot_Mini_Goldendoodle_Dog.jpg'),
-      'labradoodle': wikiImg('Labradoodle_in_Profile.jpg'),
-      'pomsky': wikiImg('Pomsky_2.jpg'),
-      'shiba': wikiImg('Taka_Shiba.jpg'),
-      'akita': wikiImg('Akita_Inu_dog.jpg'),
-      'husky': wikiImg('Black-Magic-Big-Boy.jpg'),
-      'malamute': wikiImg('Adult_Alaskan_Malamute.jpg'),
-      'samoyed': wikiImg('Samojed01.jpg'),
-      'pomeranian': wikiImg('Pomeranian_oranje-1.jpg'),
-      'frenchie': wikiImg('Frenchie_(pup).jpg'),
-      'bulldog': wikiImg('Bulldog_inglese.jpg'),
-      'pug': wikiImg('Pug_600.jpg'),
-      'boxer': wikiImg('Boxer_female_brown.jpg'),
-      'beagle': wikiImg('Beagle_in_snow.jpg'),
-      'whippet': wikiImg('Whippet_001.jpg'),
-      'greyhound': wikiImg('Greyhound_Racing_2_amk.jpg'),
-      'lurcher': wikiImg('Lurcher_dog.jpg'),
-      'dachshund': wikiImg('Standard_Dachshund.jpg'),
-      'border': wikiImg('Cooper_the_Tricolor_Smooth_Coat_Border_Collie.jpg'),
-      'aussie': wikiImg('Australian_Shepherd_-_blue_merle.jpg'),
-      'gsd': wikiImg('German_Shepherd_-_DSC_0346_(10096362833).jpg'),
-      'belgian': wikiImg('Belgian_Malinois_600.jpg'),
-      'corgi': wikiImg('Welsh_Pembroke_Corgi_4.jpg'),
-      'springer': wikiImg('English_springer_spaniel.jpg'),
-      'cocker': wikiImg('Black_English_Cocker_Spaniel.jpg'),
-      'vizsla': wikiImg('Vizsla.jpg'),
-      'gsp': wikiImg('Vencedor_dos_Vencedores.jpg'),
-      'staffie': wikiImg('Staffordshire_Bull_Terrier_600.jpg'),
-      'border-terrier': wikiImg('Holly_the_Border_Terrier.jpg'),
-      'jrt': wikiImg('Jack_Russell_Terrier_1.jpg'),
-      'westie': wikiImg('West_Highland_White_Terrier_Cute.jpg'),
-      'mini-schnauzer': wikiImg('Miniature_Schnauzer_-_Salt_n_Pepper.jpg'),
-      'shih-tzu': wikiImg('Shih-Tzu.JPG'),
-      'havanese': wikiImg('Bichon_Havanais_001.jpg'),
-      'maltese': wikiImg('Maltese_terrier1.jpg'),
-      'chihuahua': wikiImg('Chihuahua_sitting.jpg'),
-      'rottweiler': wikiImg('Rottweiler_standing_facing_left.jpg'),
-      'doberman': wikiImg('Doberman2_BlackTan.jpg'),
-      'bernese': wikiImg('Bouvier_Bernois.jpg'),
-      'newfie': wikiImg('Newfoundland_dog_Smoky.jpg'),
-      'great-dane': wikiImg('Great_Dane_-_dane_4.jpg'),
-      'poodle-std': wikiImg('Standard_Poodle_in_a_garden.jpg'),
-      'mixed': wikiImg('Mongrel_dog_face.jpg'),
+      'lab': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Labrador_on_Quantock_%282175262184%29.jpg/400px-Labrador_on_Quantock_%282175262184%29.jpg',
+      'goldie': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Golden_Retriever_Dukedestiny01_drvd.jpg/400px-Golden_Retriever_Dukedestiny01_drvd.jpg',
+      'cavalier': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/CarterBIS.Tiki.13.6.09.jpg/400px-CarterBIS.Tiki.13.6.09.jpg',
+      'cockapoo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Cockapoo_apricot_standing.jpg/400px-Cockapoo_apricot_standing.jpg',
+      'goldendoodle': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Golden_Doodle_Standing_%28HD%29.jpg/400px-Golden_Doodle_Standing_%28HD%29.jpg',
+      'labradoodle': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Labradoodle-Brown-Male-SideFace.jpg/400px-Labradoodle-Brown-Male-SideFace.jpg',
+      'pomsky': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Pomsky_Dog_Breed_-_Pomeranian_Husky_Mix.jpg/400px-Pomsky_Dog_Breed_-_Pomeranian_Husky_Mix.jpg',
+      'shiba': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Taka_Shiba.jpg/400px-Taka_Shiba.jpg',
+      'akita': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Akita_Collage.png/400px-Akita_Collage.png',
+      'husky': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Husky_L.jpg/400px-Husky_L.jpg',
+      'malamute': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Alaskan_Malamute.jpg/400px-Alaskan_Malamute.jpg',
+      'samoyed': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Samojed00.jpg/400px-Samojed00.jpg',
+      'pomeranian': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Pomeranian.JPG/400px-Pomeranian.JPG',
+      'frenchie': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/2008-07-28_Dog_at_Frolick_Field.jpg/400px-2008-07-28_Dog_at_Frolick_Field.jpg',
+      'bulldog': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Bulldog_inglese.jpg/400px-Bulldog_inglese.jpg',
+      'pug': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Mops-duke-mopszucht-vom-maegdebrunnen.jpg/400px-Mops-duke-mopszucht-vom-maegdebrunnen.jpg',
+      'boxer': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Male_fawn_Boxer_undocked.jpg/400px-Male_fawn_Boxer_undocked.jpg',
+      'beagle': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Beagle_600.jpg/400px-Beagle_600.jpg',
+      'whippet': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Whippet_2018_6.jpg/400px-Whippet_2018_6.jpg',
+      'greyhound': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/GraceTheGreyhound.jpg/400px-GraceTheGreyhound.jpg',
+      'lurcher': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Lurcher_on_Mountain.jpg/400px-Lurcher_on_Mountain.jpg',
+      'dachshund': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/%EB%8B%A5%EC%8A%A4%ED%9B%88%ED%8A%B8%28%EB%8B%A8%EB%AA%A8%EC%A2%85%29_%28Dachshund_%28Short%29%29.jpg/400px-%EB%8B%A5%EC%8A%A4%ED%9B%88%ED%8A%B8%28%EB%8B%A8%EB%AA%A8%EC%A2%85%29_%28Dachshund_%28Short%29%29.jpg',
+      'border': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Border_Collie_600.jpg/400px-Border_Collie_600.jpg',
+      'aussie': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Australian_Shepherd_red_bi.JPG/400px-Australian_Shepherd_red_bi.JPG',
+      'gsd': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/German_Shepherd_-_DSC_0346_%2810096362833%29.jpg/400px-German_Shepherd_-_DSC_0346_%2810096362833%29.jpg',
+      'belgian': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/04_-_Belgian_shepherd_dog_varieties_-_Groenendael%2CTervuren%2C_Malinois%2C_Laekenois.jpg/400px-04_-_Belgian_shepherd_dog_varieties_-_Groenendael%2CTervuren%2C_Malinois%2C_Laekenois.jpg',
+      'corgi': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Welsh_Pembroke_Corgi.jpg/400px-Welsh_Pembroke_Corgi.jpg',
+      'springer': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Springer_Spaniel_Wide_Shot.jpg/400px-Springer_Spaniel_Wide_Shot.jpg',
+      'cocker': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/%22Bill%22_-_Cocker_spaniel_anglais_2.JPG/400px-%22Bill%22_-_Cocker_spaniel_anglais_2.JPG',
+      'vizsla': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Wy%C5%BCe%C5%82_w%C4%99gierski_g%C5%82adkow%C5%82osy_500.jpg/400px-Wy%C5%BCe%C5%82_w%C4%99gierski_g%C5%82adkow%C5%82osy_500.jpg',
+      'gsp': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Duitse_staande_korthaar_10-10-2.jpg/400px-Duitse_staande_korthaar_10-10-2.jpg',
+      'staffie': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Staffordshire_Bull_Terrier_600.jpg/400px-Staffordshire_Bull_Terrier_600.jpg',
+      'border-terrier': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Border_Terrier.jpg/400px-Border_Terrier.jpg',
+      'jrt': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Jack_Russell_Terrier_1.jpg/400px-Jack_Russell_Terrier_1.jpg',
+      'westie': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/West_Highland_White_Terrier_Krakow.jpg/400px-West_Highland_White_Terrier_Krakow.jpg',
+      'mini-schnauzer': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Miniature_Schnauzer_salt_%26_pepper_%28cropped%29.jpg/400px-Miniature_Schnauzer_salt_%26_pepper_%28cropped%29.jpg',
+      'shih-tzu': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Shihtzu_%28cropped%29.jpg/400px-Shihtzu_%28cropped%29.jpg',
+      'havanese': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/A_Havanese_judging.jpg/400px-A_Havanese_judging.jpg',
+      'maltese': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Maltese_600.jpg/400px-Maltese_600.jpg',
+      'chihuahua': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Chihuahua1_bvdb.jpg/400px-Chihuahua1_bvdb.jpg',
+      'rottweiler': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Rottweiler_standing_facing_left.jpg/400px-Rottweiler_standing_facing_left.jpg',
+      'doberman': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Dobermann_handling.jpg/400px-Dobermann_handling.jpg',
+      'bernese': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/3-BerneseMountainDogInGrass.jpg/400px-3-BerneseMountainDogInGrass.jpg',
+      'newfie': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Newfoundland_dog_Smoky.jpg/400px-Newfoundland_dog_Smoky.jpg',
+      'great-dane': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Dog_niemiecki_%C5%BC%C3%B3%C5%82ty_LM980.jpg/400px-Dog_niemiecki_%C5%BC%C3%B3%C5%82ty_LM980.jpg',
+      'poodle-std': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Full_attention_%288067543690%29.jpg/400px-Full_attention_%288067543690%29.jpg',
+      'mixed': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Mongrel_1.jpg/400px-Mongrel_1.jpg',
     };
 
     const BreedImage = ({ breedId, className = '' }) => {
@@ -401,19 +399,19 @@
                   </div>
                 </div>
                 <div className="text-sm text-stone-600 mb-3">{filteredBreeds.length} breeds match • Selected: {selectedBreeds.length}/3</div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
                   {filteredBreeds.map(b => (
-                    <button key={b.id} onClick={() => toggleBreed(b.id)} className={`rounded-2xl border-2 transition text-left overflow-hidden ${selectedBreeds.includes(b.id) ? 'border-emerald-500 bg-emerald-50 shadow-md' : 'border-stone-200 bg-white hover:border-stone-300 hover:shadow-sm'}`}>
-                      <div className="aspect-[4/3] overflow-hidden bg-stone-100 relative">
+                    <button key={b.id} onClick={() => toggleBreed(b.id)} className={`rounded-xl border-2 transition text-left overflow-hidden ${selectedBreeds.includes(b.id) ? 'border-emerald-500 bg-emerald-50 shadow-md' : 'border-stone-200 bg-white hover:border-stone-300 hover:shadow-sm'}`}>
+                      <div className="aspect-[3/2] overflow-hidden bg-stone-100 relative">
                         <BreedImage breedId={b.id} className="w-full h-full" />
                         {selectedBreeds.includes(b.id) && (
-                          <div className="absolute top-2 right-2 w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg"><CheckCircle2 size={16} className="text-white" /></div>
+                          <div className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shadow"><CheckCircle2 size={14} className="text-white" /></div>
                         )}
+                        {b.popularIn.includes(country) && <div className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-emerald-600/90 text-white text-[10px] font-medium rounded">Popular in {country}</div>}
                       </div>
-                      <div className="p-3">
-                        <div className="font-semibold text-sm text-stone-900 leading-tight">{b.name}</div>
-                        <div className="text-xs text-stone-500 mt-1">{b.size} • {b.lifespan}</div>
-                        {b.popularIn.includes(country) && <div className="text-xs text-emerald-700 font-medium mt-1">Popular in {country}</div>}
+                      <div className="px-2 py-1.5">
+                        <div className="font-semibold text-[13px] text-stone-900 leading-tight truncate">{b.name}</div>
+                        <div className="text-[11px] text-stone-500 mt-0.5 truncate">{b.size} • {b.lifespan}</div>
                       </div>
                     </button>
                   ))}
