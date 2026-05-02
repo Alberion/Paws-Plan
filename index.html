@@ -664,6 +664,17 @@
                     </div>
                     {compareBreeds.length >= 1 && (
                       <>
+                        <CompareSection k="summary" title="At a glance">
+                          <Row label="Description" getValue={b => b.description} />
+                          <Row label="Size · Lifespan" getValue={b => `${b.size} · ${b.lifespan}`} />
+                          <Row label="Exercise" getValue={b => b.exercise} />
+                          <Row label="Monthly cost" getValue={b => computeBreakdown(b).monthly} type="currency" suffix="/mo" bold />
+                          <Row label="Annual cost" getValue={b => computeBreakdown(b).annual} type="currency" suffix="/yr" bold />
+                          <Row label="Energy" getValue={b => b.energy} type="rating" />
+                          <Row label="First-timer" getValue={b => b.firstTimer} type="rating" />
+                          <Row label="Alone time" getValue={b => b.aloneTolerance} type="rating" />
+                          <Row label="Health concerns" getValue={b => b.healthIssues} />
+                        </CompareSection>
                         <CompareSection k="physical" title="Physical">
                           <Row label="Size" getValue={b => b.size} /><Row label="Weight" getValue={b => b.weight} /><Row label="Height" getValue={b => b.height} /><Row label="Lifespan" getValue={b => b.lifespan} /><Row label="Coat type" getValue={b => b.coat} /><Row label="Shedding" getValue={b => b.shedding} type="rating" /><Row label="Drooling" getValue={b => b.drooling} type="rating" /><Row label="Colours" getValue={b => b.colors} />
                         </CompareSection>
@@ -694,9 +705,6 @@
                         </CompareSection>
                         <CompareSection k="climate" title="Climate">
                           <Row label="Heat tolerance" getValue={b => b.heatTolerance} type="rating" /><Row label="Cold tolerance" getValue={b => b.coldTolerance} type="rating" />
-                        </CompareSection>
-                        <CompareSection k="summary" title="Summary">
-                          <Row label="Description" getValue={b => b.description} />
                         </CompareSection>
                         <div className="h-4"></div>
                       </>
