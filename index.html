@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Paws & Plan — First-Time Dog Owner's Guide</title>
+  <meta name="description" content="An honest, thorough guide for first-time dog owners. Compare 45+ breeds, calculate true costs, and learn what no one else tells you." />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.25.6/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" data-presets="react">
+    const { useState, useMemo } = React;
+
+    // ============ ICONS (inline SVG, no library needed) ============
+    const Icon = ({ d, size = 16, className = '', strokeWidth = 2 }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
+        {d}
+      </svg>
+    );
+    const Heart = (p) => <Icon {...p} d={<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/>} />;
+    const PawPrint = (p) => <Icon {...p} d={<><circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="20" cy="16" r="2"/><path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z"/></>} />;
+    const Home = (p) => <Icon {...p} d={<><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>} />;
+    const BookOpen = (p) => <Icon {...p} d={<><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></>} />;
+    const AlertCircle = (p) => <Icon {...p} d={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>} />;
+    const CheckCircle2 = (p) => <Icon {...p} d={<><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>} />;
+    const X = (p) => <Icon {...p} d={<><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>} />;
+    const ChevronRight = (p) => <Icon {...p} d={<polyline points="9 18 15 12 9 6"/>} />;
+    const Search = (p) => <Icon {...p} d={<><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></>} />;
+    const Filter = (p) => <Icon {...p} d={<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>} />;
+    const Calculator = (p) => <Icon {...p} d={<><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></>} />;
+    const Sparkles = (p) => <Icon {...p} d={<><path d="m12 3-1.9 5.8a2 2 0 0 1-1.287 1.288L3 12l5.8 1.9a2 2 0 0 1 1.288 1.287L12 21l1.9-5.8a2 2 0 0 1 1.287-1.288L21 12l-5.8-1.9a2 2 0 0 1-1.288-1.287Z"/></>} />;
+    const Globe = (p) => <Icon {...p} d={<><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></>} />;
+
+    // ============ COUNTRIES ============
+    const countries = {
+      UK: { name: 'United Kingdom', flag: '🇬🇧', currency: '£', currencyCode: 'GBP', rescues: ['Dogs Trust', 'Battersea', 'Blue Cross', 'RSPCA', 'Many Tears', 'Greyhound Trust'], multiplier: 1, notes: 'Microchipping is legally required by 8 weeks. XL Bullies require exemption certificates.' },
+      US: { name: 'United States', flag: '🇺🇸', currency: '$', currencyCode: 'USD', rescues: ['ASPCA', 'Best Friends', 'Humane Society', 'Petfinder', 'Local shelters'], multiplier: 1.3, notes: 'Costs and breed suitability vary hugely by state. Heartworm prevention is essential in most regions.' },
+      CA: { name: 'Canada', flag: '🇨🇦', currency: 'C$', currencyCode: 'CAD', rescues: ['Humane Canada', 'SPCA', 'Petfinder.ca', 'Provincial rescues'], multiplier: 1.4, notes: 'Cold-tolerant breeds thrive. Some provinces restrict certain breeds.' },
+      AU: { name: 'Australia', flag: '🇦🇺', currency: 'A$', currencyCode: 'AUD', rescues: ['RSPCA Australia', 'PetRescue', 'Animal Welfare League', 'Local pounds'], multiplier: 1.6, notes: 'Heat-tolerant breeds essential. Tick paralysis is a serious risk. Some states restrict breeds.' },
+      IE: { name: 'Ireland', flag: '🇮🇪', currency: '€', currencyCode: 'EUR', rescues: ['Dogs Trust Ireland', 'ISPCA', 'Madra', 'Dogs Aid'], multiplier: 1.15, notes: 'Restricted breeds list — must be muzzled in public. Microchipping legally required.' },
+      DE: { name: 'Germany', flag: '🇩🇪', currency: '€', currencyCode: 'EUR', rescues: ['Tierheim (local shelters)', 'TASSO e.V.', 'Bund gegen Missbrauch der Tiere'], multiplier: 1.2, notes: 'Dog tax (Hundesteuer) varies by city. Listenhunde laws restrict certain breeds.' },
+      FR: { name: 'France', flag: '🇫🇷', currency: '€', currencyCode: 'EUR', rescues: ['SPA', '30 Millions d\'Amis', 'Refuges locaux'], multiplier: 1.15, notes: 'Categories 1 & 2 dogs require licensing. Identification (chip or tattoo) is mandatory.' },
+      NL: { name: 'Netherlands', flag: '🇳🇱', currency: '€', currencyCode: 'EUR', rescues: ['Dierenbescherming', 'Stichting DOA', 'Local asielen'], multiplier: 1.25, notes: 'Hondenbelasting (dog tax) varies by municipality. Strong cycling culture — many dogs travel by bike.' },
+      ES: { name: 'Spain', flag: '🇪🇸', currency: '€', currencyCode: 'EUR', rescues: ['SOS Galgos', 'Galgos del Sol', 'Local protectoras'], multiplier: 0.9, notes: 'Many ex-hunting Galgos and Podencos available. PPP (potentially dangerous) breeds need licences.' },
+      IT: { name: 'Italy', flag: '🇮🇹', currency: '€', currencyCode: 'EUR', rescues: ['ENPA', 'LIPU', 'Local canili'], multiplier: 1, notes: 'Anagrafe canina (national dog registry) is mandatory. Strong rescue culture.' },
+    };
+
+    // ============ IMAGES (Wikipedia Commons via Special:FilePath) ============
+    const wikiImg = (filename) => `https://commons.wikimedia.org/wiki/Special:FilePath/${filename}?width=400`;
+
+    const breedImages = {
+      'lab': wikiImg('Labrador_Retriever_portrait.jpg'),
+      'goldie': wikiImg('Golden_Retriever_Carlos_(10581910556).jpg'),
+      'cavalier': wikiImg('Cavalier_King_Charles_Spaniel_tricolor.jpg'),
+      'cockapoo': wikiImg('Cockapoo_dog.jpg'),
+      'goldendoodle': wikiImg('Apricot_Mini_Goldendoodle_Dog.jpg'),
+      'labradoodle': wikiImg('Labradoodle_in_Profile.jpg'),
+      'pomsky': wikiImg('Pomsky_2.jpg'),
+      'shiba': wikiImg('Taka_Shiba.jpg'),
+      'akita': wikiImg('Akita_Inu_dog.jpg'),
+      'husky': wikiImg('Black-Magic-Big-Boy.jpg'),
+      'malamute': wikiImg('Adult_Alaskan_Malamute.jpg'),
+      'samoyed': wikiImg('Samojed01.jpg'),
+      'pomeranian': wikiImg('Pomeranian_oranje-1.jpg'),
+      'frenchie': wikiImg('Frenchie_(pup).jpg'),
+      'bulldog': wikiImg('Bulldog_inglese.jpg'),
+      'pug': wikiImg('Pug_600.jpg'),
+      'boxer': wikiImg('Boxer_female_brown.jpg'),
+      'beagle': wikiImg('Beagle_in_snow.jpg'),
+      'whippet': wikiImg('Whippet_001.jpg'),
+      'greyhound': wikiImg('Greyhound_Racing_2_amk.jpg'),
+      'lurcher': wikiImg('Lurcher_dog.jpg'),
+      'dachshund': wikiImg('Standard_Dachshund.jpg'),
+      'border': wikiImg('Cooper_the_Tricolor_Smooth_Coat_Border_Collie.jpg'),
+      'aussie': wikiImg('Australian_Shepherd_-_blue_merle.jpg'),
+      'gsd': wikiImg('German_Shepherd_-_DSC_0346_(10096362833).jpg'),
+      'belgian': wikiImg('Belgian_Malinois_600.jpg'),
+      'corgi': wikiImg('Welsh_Pembroke_Corgi_4.jpg'),
+      'springer': wikiImg('English_springer_spaniel.jpg'),
+      'cocker': wikiImg('Black_English_Cocker_Spaniel.jpg'),
+      'vizsla': wikiImg('Vizsla.jpg'),
+      'gsp': wikiImg('Vencedor_dos_Vencedores.jpg'),
+      'staffie': wikiImg('Staffordshire_Bull_Terrier_600.jpg'),
+      'border-terrier': wikiImg('Holly_the_Border_Terrier.jpg'),
+      'jrt': wikiImg('Jack_Russell_Terrier_1.jpg'),
+      'westie': wikiImg('West_Highland_White_Terrier_Cute.jpg'),
+      'mini-schnauzer': wikiImg('Miniature_Schnauzer_-_Salt_n_Pepper.jpg'),
+      'shih-tzu': wikiImg('Shih-Tzu.JPG'),
+      'havanese': wikiImg('Bichon_Havanais_001.jpg'),
+      'maltese': wikiImg('Maltese_terrier1.jpg'),
+      'chihuahua': wikiImg('Chihuahua_sitting.jpg'),
+      'rottweiler': wikiImg('Rottweiler_standing_facing_left.jpg'),
+      'doberman': wikiImg('Doberman2_BlackTan.jpg'),
+      'bernese': wikiImg('Bouvier_Bernois.jpg'),
+      'newfie': wikiImg('Newfoundland_dog_Smoky.jpg'),
+      'great-dane': wikiImg('Great_Dane_-_dane_4.jpg'),
+      'poodle-std': wikiImg('Standard_Poodle_in_a_garden.jpg'),
+      'mixed': wikiImg('Mongrel_dog_face.jpg'),
+    };
+
+    const BreedImage = ({ breedId, className = '' }) => {
+      const [errored, setErrored] = useState(false);
+      const url = breedImages[breedId];
+      if (!url || errored) {
+        return (
+          <div className={`bg-gradient-to-br from-emerald-100 to-amber-100 flex items-center justify-center ${className}`}>
+            <PawPrint size={32} className="text-emerald-600/60" />
+          </div>
+        );
+      }
+      return <img src={url} alt="" className={`object-cover w-full h-full ${className}`} loading="lazy" onError={() => setErrored(true)} />;
+    };
+
+    // ============ BREEDS DATA ============
+    const breeds = [
+      { id: 'lab', name: 'Labrador Retriever', origin: 'Canada/UK', size: 'Large', weight: '25-36 kg', height: '55-62 cm', lifespan: '10-12 years', coat: 'Double coat, short', shedding: 4, drooling: 2, colors: 'Black, yellow, chocolate', trainability: 5, intelligence: 5, energy: 4, playfulness: 5, affection: 5, independence: 2, stubbornness: 2, preyDrive: 3, barking: 2, watchdog: 2, strangerFriendly: 5, kidFriendly: 5, dogFriendly: 5, catFriendly: 4, firstTimer: 5, apartment: 2, aloneTolerance: 2, exercise: '2+ hours/day', mentalNeeds: 4, groomingFreq: 'Weekly brushing', groomingCost: 20, trainingDifficulty: 1, housetraining: 2, healthIssues: 'Hip/elbow dysplasia, obesity, ear infections', vetCosts: 2, insuranceBand: 50, foodConsumption: 'High', purchasePrice: 1200, rescueAvailability: 5, heatTolerance: 3, coldTolerance: 4, popularIn: ['UK', 'US', 'CA', 'AU', 'IE', 'DE', 'FR', 'NL'], description: 'The world\'s most popular breed for good reason — friendly, trainable, and adaptable.' },
+      { id: 'goldie', name: 'Golden Retriever', origin: 'Scotland', size: 'Large', weight: '25-34 kg', height: '51-61 cm', lifespan: '10-12 years', coat: 'Double coat, long', shedding: 5, drooling: 2, colors: 'Cream to dark gold', trainability: 5, intelligence: 5, energy: 4, playfulness: 5, affection: 5, independence: 2, stubbornness: 1, preyDrive: 3, barking: 2, watchdog: 1, strangerFriendly: 5, kidFriendly: 5, dogFriendly: 5, catFriendly: 4, firstTimer: 5, apartment: 2, aloneTolerance: 2, exercise: '2+ hours/day', mentalNeeds: 4, groomingFreq: '2-3x weekly', groomingCost: 50, trainingDifficulty: 1, housetraining: 2, healthIssues: 'Cancer (high incidence — over 60% in some studies), hip dysplasia, heart issues', vetCosts: 3, insuranceBand: 65, foodConsumption: 'High', purchasePrice: 2000, rescueAvailability: 4, heatTolerance: 2, coldTolerance: 5, popularIn: ['UK', 'US', 'CA', 'IE', 'DE', 'FR', 'NL'], description: 'Gentle, eager-to-please family dogs. Heartbreaking cancer prevalence — research lines carefully.' },
+      { id: 'cavalier', name: 'Cavalier King Charles Spaniel', origin: 'UK', size: 'Small', weight: '5-8 kg', height: '30-33 cm', lifespan: '9-14 years', coat: 'Silky, medium', shedding: 3, drooling: 1, colors: 'Blenheim, tricolor, black & tan, ruby', trainability: 4, intelligence: 3, energy: 2, playfulness: 4, affection: 5, independence: 1, stubbornness: 1, preyDrive: 2, barking: 2, watchdog: 1, strangerFriendly: 5, kidFriendly: 5, dogFriendly: 5, catFriendly: 4, firstTimer: 5, apartment: 5, aloneTolerance: 1, exercise: '1 hour/day', mentalNeeds: 2, groomingFreq: '2-3x weekly', groomingCost: 35, trainingDifficulty: 2, housetraining: 3, healthIssues: 'Heart disease (MVD — over 50% by age 5), syringomyelia, eye issues — significant breed-specific problems', vetCosts: 3, insuranceBand: 70, foodConsumption: 'Low', purchasePrice: 2500, rescueAvailability: 2, heatTolerance: 2, coldTolerance: 3, popularIn: ['UK', 'US', 'IE', 'AU'], description: 'Gentle, affectionate lapdogs. Severe breed-specific heart and brain disorders — major welfare concerns.' },
+      { id: 'cockapoo', name: 'Cockapoo', origin: 'US/UK', size: 'Small-Medium', weight: '5-11 kg', height: '25-38 cm', lifespan: '13-15 years', coat: 'Curly/wavy, low-shed', shedding: 1, drooling: 1, colors: 'Many — cream, apricot, black, chocolate, parti', trainability: 4, intelligence: 4, energy: 3, playfulness: 5, affection: 5, independence: 1, stubbornness: 2, preyDrive: 2, barking: 3, watchdog: 3, strangerFriendly: 5, kidFriendly: 5, dogFriendly: 5, catFriendly: 4, firstTimer: 4, apartment: 4, aloneTolerance: 1, exercise: '1 hour/day', mentalNeeds: 4, groomingFreq: 'Daily brushing', groomingCost: 70, trainingDifficulty: 2, housetraining: 3, healthIssues: 'Eye conditions, ear infections, patellar luxation. Health varies hugely between breeders.', vetCosts: 2, insuranceBand: 45, foodConsumption: 'Low-Medium', purchasePrice: 2500, rescueAvailability: 2, heatTolerance: 3, coldTolerance: 3, popularIn: ['UK', 'US', 'IE', 'AU'], description: 'Hugely popular crossbreed — affectionate, playful, low-shedding. Quality varies massively between breeders.' },
+      { id: 'goldendoodle', name: 'Goldendoodle', origin: 'US', size: 'Medium-Large', weight: '13-32 kg', height: '38-66 cm', lifespan: '10-15 years', coat: 'Wavy/curly, low-shed', shedding: 2, drooling: 1, colors: 'Cream, apricot, red, black, parti', trainability: 5, intelligence: 5, energy: 4, playfulness: 5, affection: 5, independence: 2, stubbornness: 2, preyDrive: 2, barking: 2, watchdog: 2, strangerFriendly: 5, kidFriendly: 5, dogFriendly: 5, catFriendly: 4, firstTimer: 4, apartment: 2, aloneTolerance: 1, exercise: '1.5-2 hours/day', mentalNeeds: 4, groomingFreq: 'Daily + clip every 6-8 weeks', groomingCost: 80, trainingDifficulty: 1, housetraining: 2, healthIssues: 'Hip dysplasia, eye conditions, ear infections, may inherit Golden\'s cancer risk', vetCosts: 2, insuranceBand: 55, foodConsumption: 'High', purchasePrice: 2500, rescueAvailability: 2, heatTolerance: 3, coldTolerance: 4, popularIn: ['US', 'CA', 'AU', 'UK'], description: 'Massive in North America. Affectionate, smart, and (mostly) low-shedding. Avoid "designer" puppy mills.' },
+      { id: 'labradoodle', name: 'Labradoodle', origin: 'Australia', size: 'Medium-Large', weight: '11-30 kg', height: '36-66 cm', lifespan: '12-15 years', coat: 'Wavy/curly, varies', shedding: 2, drooling: 2, colors: 'Cream, gold, chocolate, black, parti', trainability: 5, intelligence: 5, energy: 4, playfulness: 5, affection: 5, independence: 2, stubbornness: 2, preyDrive: 3, barking: 2, watchdog: 2, strangerFriendly: 5, kidFriendly: 5, dogFriendly: 5, catFriendly: 4, firstTimer: 4, apartment: 2, aloneTolerance: 2, exercise: '1.5-2 hours/day', mentalNeeds: 4, groomingFreq: 'Daily + clip every 6-8 weeks', groomingCost: 75, trainingDifficulty: 1, housetraining: 2, healthIssues: 'Hip/elbow dysplasia, eye conditions, ear infections', vetCosts: 2, insuranceBand: 55, foodConsumption: 'High', purchasePrice: 2500, rescueAvailability: 2, heatTolerance: 3, coldTolerance: 4, popularIn: ['AU', 'US', 'UK', 'CA'], description: 'The original "doodle" — bred for guide dog work. Friendly and trainable, with variable coat outcomes.' },
+      { id: 'pomsky', name: 'Pomsky (Pomeranian × Husky)', origin: 'US', size: 'Small-Medium', weight: '7-14 kg', height: '25-38 cm', lifespan: '13-15 years', coat: 'Double coat, fluffy', shedding: 5, drooling: 1, colors: 'Many — grey, black, white, brown, parti', trainability: 3, intelligence: 4, energy: 4, playfulness: 4, affection: 4, independence: 3, stubbornness: 4, preyDrive: 4, barking: 4, watchdog: 4, strangerFriendly: 3, kidFriendly: 3, dogFriendly: 3, catFriendly: 2, firstTimer: 2, apartment: 3, aloneTolerance: 2, exercise: '1.5 hours/day', mentalNeeds: 4, groomingFreq: '3x weekly', groomingCost: 40, trainingDifficulty: 3, housetraining: 3, healthIssues: 'Patellar luxation, eye conditions, dental issues, hip dysplasia. Bred via artificial insemination — ethical concerns.', vetCosts: 2, insuranceBand: 50, foodConsumption: 'Medium', purchasePrice: 3500, rescueAvailability: 1, heatTolerance: 2, coldTolerance: 5, popularIn: ['US', 'CA', 'UK'], description: 'Trendy designer cross. Significant ethical concerns: bred via artificial insemination due to size mismatch.' },
+      { id: 'shiba', name: 'Shiba Inu', origin: 'Japan', size: 'Small-Medium', weight: '7-11 kg', height: '33-43 cm', lifespan: '13-16 years', coat: 'Double coat, dense', shedding: 5, drooling: 1, colors: 'Red, sesame, black & tan, cream', trainability: 2, intelligence: 5, energy: 3, playfulness: 3, affection: 3, independence: 5, stubbornness: 5, preyDrive: 5, barking: 2, watchdog: 5, strangerFriendly: 2, kidFriendly: 3, dogFriendly: 2, catFriendly: 1, firstTimer: 1, apartment: 4, aloneTolerance: 4, exercise: '1 hour/day', mentalNeeds: 4, groomingFreq: 'Weekly (daily during heavy seasonal sheds)', groomingCost: 25, trainingDifficulty: 5, housetraining: 1, healthIssues: 'Generally healthy — allergies, patellar luxation, hip dysplasia, glaucoma', vetCosts: 1, insuranceBand: 35, foodConsumption: 'Low', purchasePrice: 2500, rescueAvailability: 2, heatTolerance: 3, coldTolerance: 5, popularIn: ['US', 'UK', 'CA', 'AU', 'DE', 'FR', 'NL'], description: 'Cat-like and notoriously stubborn. Famous for the "Shiba scream". Will run away if off-lead. Not for first-timers.' },
+      { id: 'akita', name: 'Akita Inu (Japanese)', origin: 'Japan', size: 'Large', weight: '23-50 kg', height: '58-71 cm', lifespan: '10-12 years', coat: 'Double coat, dense', shedding: 5, drooling: 2, colors: 'Red, brindle, white, sesame', trainability: 3, intelligence: 4, energy: 3, playfulness: 2, affection: 4, independence: 5, stubbornness: 5, preyDrive: 5, barking: 1, watchdog: 5, strangerFriendly: 1, kidFriendly: 3, dogFriendly: 1, catFriendly: 1, firstTimer: 1, apartment: 1, aloneTolerance: 4, exercise: '1.5 hours/day', mentalNeeds: 3, groomingFreq: '2x weekly', groomingCost: 30, trainingDifficulty: 5, housetraining: 2, healthIssues: 'Hip dysplasia, autoimmune diseases, bloat, eye conditions', vetCosts: 3, insuranceBand: 70, foodConsumption: 'High', purchasePrice: 2500, rescueAvailability: 3, heatTolerance: 2, coldTolerance: 5, popularIn: ['US', 'UK', 'DE', 'FR', 'NL'], description: 'Dignified, fiercely loyal to family, deeply suspicious of strangers and other dogs. Requires experienced handlers.' },
+      { id: 'husky', name: 'Siberian Husky', origin: 'Russia/Siberia', size: 'Medium-Large', weight: '16-27 kg', height: '50-60 cm', lifespan: '12-15 years', coat: 'Double coat, dense', shedding: 5, drooling: 1, colors: 'Black & white, grey, red, agouti, all white', trainability: 2, intelligence: 4, energy: 5, playfulness: 4, affection: 4, independence: 5, stubbornness: 5, preyDrive: 5, barking: 1, watchdog: 1, strangerFriendly: 4, kidFriendly: 4, dogFriendly: 5, catFriendly: 1, firstTimer: 1, apartment: 1, aloneTolerance: 3, exercise: '2-3 hours/day', mentalNeeds: 5, groomingFreq: '2-3x weekly (daily seasonal "blow")', groomingCost: 30, trainingDifficulty: 5, housetraining: 2, healthIssues: 'Generally healthy — eye conditions, hip dysplasia, hypothyroidism, skin issues', vetCosts: 1, insuranceBand: 40, foodConsumption: 'Surprisingly low', purchasePrice: 1500, rescueAvailability: 4, heatTolerance: 1, coldTolerance: 5, popularIn: ['US', 'CA', 'UK', 'DE', 'NL'], description: 'Stunning, vocal, and one of the most surrendered breeds because owners underestimate them. Will escape, run, and howl.' },
+      { id: 'malamute', name: 'Alaskan Malamute', origin: 'Alaska', size: 'Large', weight: '34-39 kg', height: '58-64 cm', lifespan: '10-14 years', coat: 'Double coat, thick', shedding: 5, drooling: 2, colors: 'Grey & white, sable, black & white, red & white', trainability: 2, intelligence: 4, energy: 4, playfulness: 3, affection: 4, independence: 4, stubbornness: 5, preyDrive: 5, barking: 2, watchdog: 2, strangerFriendly: 4, kidFriendly: 3, dogFriendly: 3, catFriendly: 1, firstTimer: 1, apartment: 1, aloneTolerance: 3, exercise: '2 hours/day', mentalNeeds: 4, groomingFreq: '2-3x weekly', groomingCost: 40, trainingDifficulty: 5, housetraining: 2, healthIssues: 'Hip dysplasia, cataracts, polyneuropathy, bloat', vetCosts: 3, insuranceBand: 65, foodConsumption: 'Very high', purchasePrice: 2000, rescueAvailability: 3, heatTolerance: 1, coldTolerance: 5, popularIn: ['US', 'CA', 'UK'], description: 'Powerful, independent, and not built for warm climates. Need experienced owners and serious physical exercise.' },
+      { id: 'samoyed', name: 'Samoyed', origin: 'Russia/Siberia', size: 'Medium-Large', weight: '16-30 kg', height: '48-60 cm', lifespan: '12-14 years', coat: 'Double coat, fluffy white', shedding: 5, drooling: 1, colors: 'White, cream, biscuit', trainability: 3, intelligence: 4, energy: 4, playfulness: 5, affection: 5, independence: 3, stubbornness: 4, preyDrive: 4, barking: 4, watchdog: 3, strangerFriendly: 5, kidFriendly: 5, dogFriendly: 4, catFriendly: 3, firstTimer: 2, apartment: 2, aloneTolerance: 1, exercise: '1.5-2 hours/day', mentalNeeds: 4, groomingFreq: '2-3x weekly', groomingCost: 60, trainingDifficulty: 3, housetraining: 3, healthIssues: 'Hereditary glomerulopathy, hip dysplasia, diabetes, eye conditions', vetCosts: 3, insuranceBand: 60, foodConsumption: 'Medium', purchasePrice: 3000, rescueAvailability: 1, heatTolerance: 1, coldTolerance: 5, popularIn: ['US', 'UK', 'CA', 'DE', 'NL'], description: 'The "smiling" Sammy. Stunning but high-maintenance grooming and not heat-tolerant. Vocal "talkers".' },
+      { id: 'pomeranian', name: 'Pomeranian', origin: 'Germany/Poland', size: 'Toy', weight: '2-4 kg', height: '18-30 cm', lifespan: '12-16 years', coat: 'Double coat, fluffy', shedding: 4, drooling: 1, colors: 'Many — orange, cream, black, sable, parti', trainability: 3, intelligence: 3, energy: 3, playfulness: 4, affection: 4, independence: 2, stubbornness: 4, preyDrive: 2, barking: 5, watchdog: 5, strangerFriendly: 3, kidFriendly: 2, dogFriendly: 3, catFriendly: 3, firstTimer: 3, apartment: 5, aloneTolerance: 2, exercise: '30 min/day', mentalNeeds: 3, groomingFreq: '2-3x weekly', groomingCost: 45, trainingDifficulty: 3, housetraining: 4, healthIssues: 'Tracheal collapse, patellar luxation, dental, alopecia X', vetCosts: 2, insuranceBand: 40, foodConsumption: 'Very low', purchasePrice: 2000, rescueAvailability: 2, heatTolerance: 2, coldTolerance: 4, popularIn: ['US', 'UK', 'DE', 'FR', 'IT', 'NL'], description: 'Fluffy show-stoppers with big attitudes. Fragile bones — not suitable for rough handling or rough kids.' },
+      { id: 'frenchie', name: 'French Bulldog', origin: 'France/UK', size: 'Small', weight: '8-13 kg', height: '28-33 cm', lifespan: '10-12 years', coat: 'Smooth, short', shedding: 2, drooling: 3, colors: 'Brindle, fawn, cream, pied', trainability: 2, intelligence: 3, energy: 2, playfulness: 4, affection: 5, independence: 2, stubbornness: 4, preyDrive: 2, barking: 1, watchdog: 3, strangerFriendly: 4, kidFriendly: 4, dogFriendly: 3, catFriendly: 3, firstTimer: 3, apartment: 5, aloneTolerance: 2, exercise: '30-60 min/day (avoid heat)', mentalNeeds: 2, groomingFreq: 'Weekly + skin folds', groomingCost: 25, trainingDifficulty: 4, housetraining: 4, healthIssues: 'BOAS (severe breathing problems), spine issues (IVDD), skin, eye prolapse — major welfare concerns. UK and Dutch vets have called for breed reform.', vetCosts: 4, insuranceBand: 95, foodConsumption: 'Low-Medium', purchasePrice: 3000, rescueAvailability: 3, heatTolerance: 1, coldTolerance: 2, popularIn: ['US', 'UK', 'FR', 'IT', 'DE', 'NL', 'AU'], description: 'World\'s most popular small breed but suffer significantly. The Netherlands has restricted breeding. Adopt over buying where possible.' },
+      { id: 'bulldog', name: 'English Bulldog', origin: 'UK', size: 'Medium', weight: '18-25 kg', height: '31-40 cm', lifespan: '8-10 years', coat: 'Smooth, short', shedding: 3, drooling: 4, colors: 'Brindle, fawn, white, pied', trainability: 2, intelligence: 2, energy: 1, playfulness: 3, affection: 5, independence: 3, stubbornness: 5, preyDrive: 1, barking: 1, watchdog: 3, strangerFriendly: 4, kidFriendly: 5, dogFriendly: 3, catFriendly: 3, firstTimer: 2, apartment: 5, aloneTolerance: 3, exercise: '30 min/day', mentalNeeds: 2, groomingFreq: 'Weekly + skin folds daily', groomingCost: 30, trainingDifficulty: 5, housetraining: 5, healthIssues: 'Severe BOAS, skin fold infections, hip dysplasia, heart disease, infertility (most need C-section). Tragically short-lived.', vetCosts: 4, insuranceBand: 110, foodConsumption: 'Medium', purchasePrice: 2500, rescueAvailability: 3, heatTolerance: 1, coldTolerance: 2, popularIn: ['US', 'UK', 'AU'], description: 'One of the most heavily modified breeds. Norway and Netherlands have restricted breeding.' },
+      { id: 'pug', name: 'Pug', origin: 'China', size: 'Small', weight: '6-9 kg', height: '25-33 cm', lifespan: '12-15 years', coat: 'Smooth, short', shedding: 4, drooling: 2, colors: 'Fawn, black, apricot, silver', trainability: 2, intelligence: 2, energy: 2, playfulness: 4, affection: 5, independence: 1, stubbornness: 4, preyDrive: 1, barking: 2, watchdog: 2, strangerFriendly: 5, kidFriendly: 5, dogFriendly: 4, catFriendly: 4, firstTimer: 3, apartment: 5, aloneTolerance: 1, exercise: '30 min/day (short bursts only)', mentalNeeds: 2, groomingFreq: 'Weekly + face folds', groomingCost: 20, trainingDifficulty: 4, housetraining: 4, healthIssues: 'BOAS, eye prolapse, spine issues, skin folds, obesity. UK vets have called the modern Pug "no longer a typical dog".', vetCosts: 4, insuranceBand: 85, foodConsumption: 'Low', purchasePrice: 2000, rescueAvailability: 3, heatTolerance: 1, coldTolerance: 2, popularIn: ['US', 'UK', 'DE', 'FR', 'NL', 'IT'], description: 'Sweet-natured but suffer significantly due to extreme breeding.' },
+      { id: 'boxer', name: 'Boxer', origin: 'Germany', size: 'Medium-Large', weight: '25-32 kg', height: '53-63 cm', lifespan: '9-12 years', coat: 'Smooth, short', shedding: 3, drooling: 4, colors: 'Fawn, brindle, white', trainability: 3, intelligence: 3, energy: 4, playfulness: 5, affection: 5, independence: 1, stubbornness: 4, preyDrive: 3, barking: 3, watchdog: 4, strangerFriendly: 4, kidFriendly: 5, dogFriendly: 3, catFriendly: 2, firstTimer: 2, apartment: 2, aloneTolerance: 1, exercise: '1.5-2 hours/day', mentalNeeds: 4, groomingFreq: 'Weekly', groomingCost: 20, trainingDifficulty: 3, housetraining: 3, healthIssues: 'Boxer cardiomyopathy, cancer (high), bloat, mild brachycephaly, epilepsy. Short-lived.', vetCosts: 4, insuranceBand: 85, foodConsumption: 'High', purchasePrice: 1800, rescueAvailability: 4, heatTolerance: 2, coldTolerance: 3, popularIn: ['US', 'UK', 'DE', 'IT', 'NL'], description: 'The clown of dogs — playful and devoted. Sadly, cancer and heart disease cut their lives short.' },
+      { id: 'beagle', name: 'Beagle', origin: 'UK', size: 'Small-Medium', weight: '9-14 kg', height: '33-40 cm', lifespan: '12-15 years', coat: 'Short, dense', shedding: 3, drooling: 2, colors: 'Tricolor, lemon, red & white', trainability: 2, intelligence: 3, energy: 4, playfulness: 4, affection: 4, independence: 4, stubbornness: 5, preyDrive: 5, barking: 4, watchdog: 3, strangerFriendly: 4, kidFriendly: 5, dogFriendly: 5, catFriendly: 2, firstTimer: 2, apartment: 2, aloneTolerance: 2, exercise: '1.5-2 hours/day', mentalNeeds: 4, groomingFreq: 'Weekly', groomingCost: 20, trainingDifficulty: 4, housetraining: 4, healthIssues: 'Epilepsy, hypothyroidism, ear infections, obesity', vetCosts: 2, insuranceBand: 40, foodConsumption: 'Medium', purchasePrice: 1200, rescueAvailability: 3, heatTolerance: 3, coldTolerance: 3, popularIn: ['US', 'UK', 'CA', 'IT', 'FR'], description: 'Cheerful, scent-driven hounds. Hard to recall off-lead and notoriously stubborn.' },
+      { id: 'whippet', name: 'Whippet', origin: 'UK', size: 'Medium', weight: '7-14 kg', height: '44-51 cm', lifespan: '12-15 years', coat: 'Short, fine', shedding: 2, drooling: 1, colors: 'Many — brindle, fawn, blue, black, white combos', trainability: 3, intelligence: 3, energy: 3, playfulness: 3, affection: 5, independence: 3, stubbornness: 3, preyDrive: 5, barking: 1, watchdog: 2, strangerFriendly: 3, kidFriendly: 4, dogFriendly: 4, catFriendly: 1, firstTimer: 4, apartment: 4, aloneTolerance: 3, exercise: '1 hour/day + sprints', mentalNeeds: 2, groomingFreq: 'Minimal', groomingCost: 10, trainingDifficulty: 3, housetraining: 2, healthIssues: 'Generally healthy — heart issues, eye conditions occasionally', vetCosts: 1, insuranceBand: 30, foodConsumption: 'Low', purchasePrice: 1000, rescueAvailability: 3, heatTolerance: 3, coldTolerance: 1, popularIn: ['UK', 'IE', 'AU', 'US'], description: 'The ultimate sofa-and-sprint dog. Surprisingly low maintenance, but needs coats in winter.' },
+      { id: 'greyhound', name: 'Greyhound (Retired Racing)', origin: 'UK/Ireland', size: 'Large', weight: '27-40 kg', height: '68-76 cm', lifespan: '10-13 years', coat: 'Short, fine', shedding: 2, drooling: 1, colors: 'Many — brindle, fawn, black, white, blue', trainability: 3, intelligence: 3, energy: 2, playfulness: 2, affection: 4, independence: 4, stubbornness: 3, preyDrive: 5, barking: 1, watchdog: 1, strangerFriendly: 4, kidFriendly: 4, dogFriendly: 4, catFriendly: 1, firstTimer: 5, apartment: 4, aloneTolerance: 3, exercise: '45-60 min/day', mentalNeeds: 2, groomingFreq: 'Weekly', groomingCost: 10, trainingDifficulty: 3, housetraining: 3, healthIssues: 'Generally healthy — bloat, dental issues, thin skin, anesthesia sensitivity', vetCosts: 1, insuranceBand: 30, foodConsumption: 'Medium', purchasePrice: 300, rescueAvailability: 5, heatTolerance: 3, coldTolerance: 1, popularIn: ['UK', 'IE', 'AU', 'US', 'ES'], description: 'The 40mph couch potato. Rescue-only and one of the easiest large dogs to own.' },
+      { id: 'lurcher', name: 'Lurcher (Sighthound cross)', origin: 'UK/Ireland', size: 'Medium-Large', weight: '15-32 kg', height: '55-71 cm', lifespan: '12-15 years', coat: 'Variable — smooth or rough', shedding: 2, drooling: 1, colors: 'Endless variety', trainability: 3, intelligence: 4, energy: 3, playfulness: 3, affection: 5, independence: 3, stubbornness: 3, preyDrive: 5, barking: 1, watchdog: 1, strangerFriendly: 4, kidFriendly: 4, dogFriendly: 4, catFriendly: 1, firstTimer: 4, apartment: 4, aloneTolerance: 3, exercise: '1 hour/day + sprints', mentalNeeds: 3, groomingFreq: 'Weekly', groomingCost: 12, trainingDifficulty: 3, housetraining: 2, healthIssues: 'Hybrid vigour — generally very healthy. Thin skin prone to tears.', vetCosts: 1, insuranceBand: 30, foodConsumption: 'Medium', purchasePrice: 250, rescueAvailability: 5, heatTolerance: 3, coldTolerance: 2, popularIn: ['UK', 'IE'], description: 'Britain & Ireland\'s best-kept secret. Calm, affectionate, healthy, and rescue-abundant.' },
+      { id: 'dachshund', name: 'Dachshund (Miniature)', origin: 'Germany', size: 'Small', weight: '4-5 kg', height: '13-18 cm', lifespan: '12-16 years', coat: 'Smooth, wirehaired, or longhaired', shedding: 3, drooling: 1, colors: 'Many — red, black & tan, dapple, piebald', trainability: 3, intelligence: 3, energy: 3, playfulness: 4, affection: 5, independence: 3, stubbornness: 5, preyDrive: 5, barking: 4, watchdog: 4, strangerFriendly: 3, kidFriendly: 3, dogFriendly: 3, catFriendly: 3, firstTimer: 3, apartment: 4, aloneTolerance: 2, exercise: '45-60 min/day', mentalNeeds: 3, groomingFreq: 'Varies by coat type', groomingCost: 25, trainingDifficulty: 4, housetraining: 5, healthIssues: 'IVDD (1 in 4 affected — can cause paralysis), dental issues, obesity. Avoid stairs and jumping.', vetCosts: 3, insuranceBand: 55, foodConsumption: 'Low', purchasePrice: 2000, rescueAvailability: 3, heatTolerance: 3, coldTolerance: 3, popularIn: ['DE', 'US', 'UK', 'IT', 'FR', 'NL'], description: 'Charming and stubborn. Their long backs are a serious welfare concern — IVDD can cost thousands.' },
+      { id: 'border', name: 'Border Collie', origin: 'UK', size: 'Medium', weight: '14-20 kg', height: '46-56 cm', lifespan: '12-15 years', coat: 'Double coat, smooth or rough', shedding: 4, drooling: 1, colors: 'Black & white, tricolor, merle, red', trainability: 5, intelligence: 5, energy: 5, playfulness: 5, affection: 4, independence: 2, stubbornness: 2, preyDrive: 4, barking: 3, watchdog: 3, strangerFriendly: 3, kidFriendly: 4, dogFriendly: 4, catFriendly: 3, firstTimer: 1, apartment: 1, aloneTolerance: 1, exercise: '3+ hours/day', mentalNeeds: 5, groomingFreq: '2-3x weekly', groomingCost: 25, trainingDifficulty: 1, housetraining: 1, healthIssues: 'Hip dysplasia, epilepsy, eye conditions (CEA), MDR1 gene', vetCosts: 2, insuranceBand: 45, foodConsumption: 'Medium', purchasePrice: 1300, rescueAvailability: 4, heatTolerance: 3, coldTolerance: 5, popularIn: ['UK', 'IE', 'US', 'AU'], description: 'The world\'s smartest dog — and a terrible idea for first-timers without serious commitment.' },
+      { id: 'aussie', name: 'Australian Shepherd', origin: 'United States', size: 'Medium', weight: '16-32 kg', height: '46-58 cm', lifespan: '12-15 years', coat: 'Double coat, medium', shedding: 4, drooling: 1, colors: 'Blue merle, red merle, black, red tri', trainability: 5, intelligence: 5, energy: 5, playfulness: 5, affection: 5, independence: 2, stubbornness: 2, preyDrive: 4, barking: 3, watchdog: 4, strangerFriendly: 3, kidFriendly: 4, dogFriendly: 4, catFriendly: 3, firstTimer: 1, apartment: 1, aloneTolerance: 1, exercise: '2-3 hours/day', mentalNeeds: 5, groomingFreq: '2-3x weekly', groomingCost: 25, trainingDifficulty: 1, housetraining: 1, healthIssues: 'Hip dysplasia, eye conditions, MDR1 gene, epilepsy. Double-merle breeding causes deafness/blindness — avoid.', vetCosts: 2, insuranceBand: 45, foodConsumption: 'Medium', purchasePrice: 1800, rescueAvailability: 3, heatTolerance: 3, coldTolerance: 5, popularIn: ['US', 'CA', 'AU', 'UK', 'DE', 'FR'], description: 'Brilliant, beautiful, and totally unsuitable for typical pet homes. Need a job. Avoid double-merle puppies.' },
+      { id: 'gsd', name: 'German Shepherd', origin: 'Germany', size: 'Large', weight: '22-40 kg', height: '55-65 cm', lifespan: '9-13 years', coat: 'Double coat, medium', shedding: 5, drooling: 3, colors: 'Black & tan, sable, all black, white', trainability: 5, intelligence: 5, energy: 4, playfulness: 4, affection: 5, independence: 2, stubbornness: 2, preyDrive: 4, barking: 4, watchdog: 5, strangerFriendly: 2, kidFriendly: 4, dogFriendly: 3, catFriendly: 2, firstTimer: 2, apartment: 1, aloneTolerance: 2, exercise: '2 hours/day', mentalNeeds: 5, groomingFreq: '2-3x weekly (daily seasonal)', groomingCost: 25, trainingDifficulty: 2, housetraining: 2, healthIssues: 'Hip/elbow dysplasia, degenerative myelopathy, bloat, EPI — sloped-back lines especially affected', vetCosts: 3, insuranceBand: 65, foodConsumption: 'High', purchasePrice: 1800, rescueAvailability: 5, heatTolerance: 2, coldTolerance: 5, popularIn: ['DE', 'US', 'UK', 'CA', 'AU', 'FR', 'NL'], description: 'Loyal, intelligent, protective. Show-line breeding has caused serious health issues — seek straight-backed lines.' },
+      { id: 'belgian', name: 'Belgian Malinois', origin: 'Belgium', size: 'Large', weight: '20-36 kg', height: '56-66 cm', lifespan: '12-14 years', coat: 'Short, double coat', shedding: 4, drooling: 2, colors: 'Fawn with black mask', trainability: 5, intelligence: 5, energy: 5, playfulness: 5, affection: 4, independence: 2, stubbornness: 2, preyDrive: 5, barking: 3, watchdog: 5, strangerFriendly: 2, kidFriendly: 3, dogFriendly: 2, catFriendly: 2, firstTimer: 1, apartment: 1, aloneTolerance: 1, exercise: '3+ hours/day', mentalNeeds: 5, groomingFreq: 'Weekly', groomingCost: 20, trainingDifficulty: 1, housetraining: 1, healthIssues: 'Hip/elbow dysplasia, eye conditions, epilepsy', vetCosts: 2, insuranceBand: 55, foodConsumption: 'High', purchasePrice: 2000, rescueAvailability: 3, heatTolerance: 3, coldTolerance: 4, popularIn: ['DE', 'FR', 'NL', 'US', 'UK'], description: 'A working dog only — used by police and military for good reason. Not a pet for 99% of homes.' },
+      { id: 'corgi', name: 'Pembroke Welsh Corgi', origin: 'Wales', size: 'Small-Medium', weight: '10-14 kg', height: '25-30 cm', lifespan: '12-15 years', coat: 'Double coat, dense', shedding: 5, drooling: 1, colors: 'Red, sable, fawn, tricolor, with white', trainability: 4, intelligence: 5, energy: 4, playfulness: 4, affection: 4, independence: 3, stubbornness: 4, preyDrive: 4, barking: 4, watchdog: 4, strangerFriendly: 3, kidFriendly: 4, dogFriendly: 3, catFriendly: 3, firstTimer: 3, apartment: 3, aloneTolerance: 2, exercise: '1.5 hours/day', mentalNeeds: 4, groomingFreq: '2-3x weekly', groomingCost: 25, trainingDifficulty: 2, housetraining: 2, healthIssues: 'IVDD (long backs), hip dysplasia, eye conditions, degenerative myelopathy, obesity', vetCosts: 2, insuranceBand: 50, foodConsumption: 'Medium', purchasePrice: 2000, rescueAvailability: 2, heatTolerance: 3, coldTolerance: 4, popularIn: ['UK', 'US', 'CA', 'AU'], description: 'Big personality in a small package. The royal favourite — but they\'re working herding dogs at heart.' },
+      { id: 'springer', name: 'English Springer Spaniel', origin: 'UK', size: 'Medium', weight: '16-23 kg', height: '46-51 cm', lifespan: '12-14 years', coat: 'Medium, feathered', shedding: 3, drooling: 2, colors: 'Liver & white, black & white, with tan', trainability: 5, intelligence: 4, energy: 5, playfulness: 5, affection: 5, independence: 2, stubbornness: 2, preyDrive: 4, barking: 3, watchdog: 3, strangerFriendly: 5, kidFriendly: 5, dogFriendly: 5, catFriendly: 3, firstTimer: 3, apartment: 1, aloneTolerance: 2, exercise: '2+ hours/day', mentalNeeds: 5, groomingFreq: '2-3x weekly + trims', groomingCost: 50, trainingDifficulty: 2, housetraining: 2, healthIssues: 'Hip dysplasia, ear infections, eye conditions, occasional rage syndrome (working lines)', vetCosts: 2, insuranceBand: 45, foodConsumption: 'Medium-High', purchasePrice: 1300, rescueAvailability: 4, heatTolerance: 3, coldTolerance: 4, popularIn: ['UK', 'IE', 'US'], description: 'Boundlessly happy and energetic. Working lines are too much for most homes.' },
+      { id: 'cocker', name: 'Cocker Spaniel (English)', origin: 'UK', size: 'Medium', weight: '12-15 kg', height: '38-43 cm', lifespan: '12-15 years', coat: 'Silky, feathered', shedding: 3, drooling: 1, colors: 'Many — solid, parti, roan', trainability: 4, intelligence: 4, energy: 4, playfulness: 5, affection: 5, independence: 2, stubbornness: 2, preyDrive: 4, barking: 3, watchdog: 3, strangerFriendly: 4, kidFriendly: 5, dogFriendly: 4, catFriendly: 3, firstTimer: 4, apartment: 3, aloneTolerance: 2, exercise: '1.5+ hours/day', mentalNeeds: 4, groomingFreq: '2-3x weekly + trims', groomingCost: 50, trainingDifficulty: 2, housetraining: 2, healthIssues: 'Ear infections, eye conditions, hip dysplasia', vetCosts: 2, insuranceBand: 45, foodConsumption: 'Medium', purchasePrice: 1500, rescueAvailability: 4, heatTolerance: 3, coldTolerance: 4, popularIn: ['UK', 'IE', 'FR', 'US'], description: 'Merry, affectionate British classic. Working line is much higher energy than show line.' },
+      { id: 'vizsla', name: 'Hungarian Vizsla', origin: 'Hungary', size: 'Medium-Large', weight: '20-29 kg', height: '53-64 cm', lifespan: '12-15 years', coat: 'Short, smooth', shedding: 3, drooling: 2, colors: 'Russet gold', trainability: 5, intelligence: 5, energy: 5, playfulness: 5, affection: 5, independence: 1, stubbornness: 2, preyDrive: 4, barking: 2, watchdog: 2, strangerFriendly: 4, kidFriendly: 5, dogFriendly: 4, catFriendly: 2, firstTimer: 2, apartment: 1, aloneTolerance: 1, exercise: '2+ hours/day', mentalNeeds: 5, groomingFreq: 'Weekly', groomingCost: 10, trainingDifficulty: 2, housetraining: 2, healthIssues: 'Generally healthy — hip dysplasia, epilepsy, certain cancers', vetCosts: 2, insuranceBand: 45, foodConsumption: 'High', purchasePrice: 2000, rescueAvailability: 2, heatTolerance: 3, coldTolerance: 1, popularIn: ['UK', 'US', 'DE', 'FR', 'NL', 'IT'], description: 'The "Velcro dog" — affectionate to the point of separation anxiety. Need huge amounts of exercise.' },
+      { id: 'gsp', name: 'German Shorthaired Pointer', origin: 'Germany', size: 'Large', weight: '20-32 kg', height: '53-64 cm', lifespan: '12-14 years', coat: 'Short, dense', shedding: 3, drooling: 2, colors: 'Liver, liver & white, ticked', trainability: 5, intelligence: 5, energy: 5, playfulness: 5, affection: 5, independence: 2, stubbornness: 3, preyDrive: 5, barking: 2, watchdog: 3, strangerFriendly: 4, kidFriendly: 4, dogFriendly: 4, catFriendly: 1, firstTimer: 1, apartment: 1, aloneTolerance: 1, exercise: '2-3 hours/day', mentalNeeds: 5, groomingFreq: 'Weekly', groomingCost: 12, trainingDifficulty: 2, housetraining: 2, healthIssues: 'Hip dysplasia, bloat (GDV), entropion', vetCosts: 2, insuranceBand: 50, foodConsumption: 'High', purchasePrice: 1600, rescueAvailability: 3, heatTolerance: 3, coldTolerance: 3, popularIn: ['DE', 'US', 'UK', 'NL'], description: 'Athletic, intelligent gun dogs that need genuine working-level exercise.' },
+      { id: 'staffie', name: 'Staffordshire Bull Terrier', origin: 'UK', size: 'Medium', weight: '11-17 kg', height: '36-41 cm', lifespan: '12-14 years', coat: 'Short, smooth', shedding: 2, drooling: 2, colors: 'Brindle, black, white, fawn, blue', trainability: 4, intelligence: 4, energy: 4, playfulness: 5, affection: 5, independence: 2, stubbornness: 3, preyDrive: 3, barking: 2, watchdog: 4, strangerFriendly: 4, kidFriendly: 5, dogFriendly: 3, catFriendly: 2, firstTimer: 3, apartment: 4, aloneTolerance: 2, exercise: '1-2 hours/day', mentalNeeds: 3, groomingFreq: 'Weekly', groomingCost: 15, trainingDifficulty: 2, housetraining: 2, healthIssues: 'Skin allergies, hip dysplasia, eye conditions', vetCosts: 2, insuranceBand: 45, foodConsumption: 'Medium', purchasePrice: 800, rescueAvailability: 5, heatTolerance: 3, coldTolerance: 3, popularIn: ['UK', 'IE', 'AU'], description: 'Loyal, loving, kid-friendly "nanny dogs". Often misunderstood and abundant in UK rescues.' },
+      { id: 'border-terrier', name: 'Border Terrier', origin: 'UK', size: 'Small', weight: '5-7 kg', height: '28-40 cm', lifespan: '12-15 years', coat: 'Wiry, double coat', shedding: 2, drooling: 1, colors: 'Red, grizzle & tan, blue & tan, wheaten', trainability: 4, intelligence: 4, energy: 4, playfulness: 4, affection: 4, independence: 3, stubbornness: 3, preyDrive: 5, barking: 3, watchdog: 3, strangerFriendly: 4, kidFriendly: 5, dogFriendly: 4, catFriendly: 2, firstTimer: 4, apartment: 3, aloneTolerance: 3, exercise: '1.5 hours/day', mentalNeeds: 3, groomingFreq: 'Weekly + hand-stripping 2x/year', groomingCost: 35, trainingDifficulty: 2, housetraining: 2, healthIssues: 'Generally robust — CECS (spike\'s disease), heart issues occasionally', vetCosts: 1, insuranceBand: 30, foodConsumption: 'Low', purchasePrice: 1200, rescueAvailability: 3, heatTolerance: 3, coldTolerance: 4, popularIn: ['UK', 'IE'], description: 'One of the healthiest, most balanced terriers. A brilliant first dog if you have time.' },
+      { id: 'jrt', name: 'Jack Russell Terrier', origin: 'UK', size: 'Small', weight: '5-8 kg', height: '25-38 cm', lifespan: '13-16 years', coat: 'Smooth, broken, or rough', shedding: 3, drooling: 1, colors: 'White with tan/black markings', trainability: 3, intelligence: 4, energy: 5, playfulness: 5, affection: 4, independence: 4, stubbornness: 5, preyDrive: 5, barking: 4, watchdog: 5, strangerFriendly: 3, kidFriendly: 3, dogFriendly: 2, catFriendly: 1, firstTimer: 2, apartment: 3, aloneTolerance: 3, exercise: '1.5-2 hours/day', mentalNeeds: 5, groomingFreq: 'Weekly', groomingCost: 12, trainingDifficulty: 3, housetraining: 2, healthIssues: 'Generally very healthy — patellar luxation, eye conditions occasionally', vetCosts: 1, insuranceBand: 30, foodConsumption: 'Low', purchasePrice: 800, rescueAvailability: 5, heatTolerance: 3, coldTolerance: 3, popularIn: ['UK', 'IE', 'US', 'AU'], description: 'Tiny dog, huge personality, prey drive of a wolf.' },
+      { id: 'westie', name: 'West Highland White Terrier', origin: 'Scotland', size: 'Small', weight: '6-10 kg', height: '25-28 cm', lifespan: '12-16 years', coat: 'Double coat, wiry', shedding: 2, drooling: 1, colors: 'White only', trainability: 3, intelligence: 3, energy: 3, playfulness: 3, affection: 4, independence: 3, stubbornness: 4, preyDrive: 4, barking: 4, watchdog: 4, strangerFriendly: 3, kidFriendly: 3, dogFriendly: 3, catFriendly: 2, firstTimer: 3, apartment: 4, aloneTolerance: 3, exercise: '1 hour/day', mentalNeeds: 3, groomingFreq: '2-3x weekly + trims', groomingCost: 40, trainingDifficulty: 3, housetraining: 3, healthIssues: 'Severe skin allergies (atopy), Westie lung disease, dental issues', vetCosts: 3, insuranceBand: 55, foodConsumption: 'Low', purchasePrice: 1200, rescueAvailability: 3, heatTolerance: 3, coldTolerance: 4, popularIn: ['UK', 'IE', 'US', 'DE'], description: 'Confident wee dogs, but skin issues are extremely common — vet bills add up.' },
+      { id: 'mini-schnauzer', name: 'Miniature Schnauzer', origin: 'Germany', size: 'Small', weight: '5-9 kg', height: '30-36 cm', lifespan: '12-15 years', coat: 'Wiry, low-shed', shedding: 1, drooling: 1, colors: 'Salt & pepper, black, black & silver, white', trainability: 4, intelligence: 4, energy: 3, playfulness: 4, affection: 4, independence: 2, stubbornness: 3, preyDrive: 4, barking: 5, watchdog: 5, strangerFriendly: 3, kidFriendly: 4, dogFriendly: 3, catFriendly: 3, firstTimer: 4, apartment: 4, aloneTolerance: 2, exercise: '1 hour/day', mentalNeeds: 4, groomingFreq: '2-3x weekly + trims', groomingCost: 45, trainingDifficulty: 2, housetraining: 2, healthIssues: 'Pancreatitis, eye issues, urinary stones', vetCosts: 2, insuranceBand: 40, foodConsumption: 'Low', purchasePrice: 1500, rescueAvailability: 2, heatTolerance: 3, coldTolerance: 4, popularIn: ['DE', 'UK', 'US', 'NL'], description: 'Spirited, alert little dogs. Low-shed coat is great, but they will bark at everything.' },
+      { id: 'shih-tzu', name: 'Shih Tzu', origin: 'Tibet/China', size: 'Small', weight: '4-7 kg', height: '20-28 cm', lifespan: '10-16 years', coat: 'Long, double coat', shedding: 2, drooling: 1, colors: 'Many — gold, black, white, brindle, parti', trainability: 2, intelligence: 2, energy: 2, playfulness: 3, affection: 5, independence: 2, stubbornness: 4, preyDrive: 1, barking: 3, watchdog: 3, strangerFriendly: 4, kidFriendly: 3, dogFriendly: 4, catFriendly: 3, firstTimer: 3, apartment: 5, aloneTolerance: 2, exercise: '30-45 min/day', mentalNeeds: 2, groomingFreq: 'Daily brushing or short clip', groomingCost: 45, trainingDifficulty: 4, housetraining: 5, healthIssues: 'Eye problems (proptosis), brachycephalic breathing issues, dental, hip dysplasia', vetCosts: 3, insuranceBand: 50, foodConsumption: 'Low', purchasePrice: 1300, rescueAvailability: 4, heatTolerance: 2, coldTolerance: 3, popularIn: ['US', 'UK', 'IT', 'FR'], description: 'Laid-back lap-warmers. Notoriously hard to housetrain.' },
+      { id: 'havanese', name: 'Havanese', origin: 'Cuba', size: 'Small', weight: '4-7 kg', height: '21-29 cm', lifespan: '14-16 years', coat: 'Silky, double coat, low-shed', shedding: 1, drooling: 1, colors: 'Many — cream, gold, black, parti', trainability: 4, intelligence: 4, energy: 3, playfulness: 5, affection: 5, independence: 1, stubbornness: 2, preyDrive: 2, barking: 3, watchdog: 3, strangerFriendly: 5, kidFriendly: 5, dogFriendly: 5, catFriendly: 4, firstTimer: 5, apartment: 5, aloneTolerance: 1, exercise: '45 min-1 hour/day', mentalNeeds: 3, groomingFreq: 'Daily or short clip', groomingCost: 50, trainingDifficulty: 2, housetraining: 3, healthIssues: 'Generally healthy — patellar luxation, eye conditions, hip dysplasia occasionally', vetCosts: 2, insuranceBand: 35, foodConsumption: 'Low', purchasePrice: 2500, rescueAvailability: 1, heatTolerance: 3, coldTolerance: 3, popularIn: ['US', 'CA', 'IT', 'ES', 'DE'], description: 'Cuba\'s national dog — affectionate, bright, low-shed, and one of the healthier toy breeds.' },
+      { id: 'maltese', name: 'Maltese', origin: 'Malta/Italy', size: 'Toy', weight: '3-4 kg', height: '20-25 cm', lifespan: '12-15 years', coat: 'Silky, single coat, low-shed', shedding: 1, drooling: 1, colors: 'White only', trainability: 3, intelligence: 3, energy: 2, playfulness: 4, affection: 5, independence: 1, stubbornness: 3, preyDrive: 2, barking: 4, watchdog: 3, strangerFriendly: 4, kidFriendly: 2, dogFriendly: 4, catFriendly: 3, firstTimer: 3, apartment: 5, aloneTolerance: 1, exercise: '30 min/day', mentalNeeds: 2, groomingFreq: 'Daily or short clip', groomingCost: 45, trainingDifficulty: 3, housetraining: 4, healthIssues: 'Patellar luxation, dental disease, tear staining, white shaker syndrome', vetCosts: 2, insuranceBand: 35, foodConsumption: 'Very low', purchasePrice: 1500, rescueAvailability: 2, heatTolerance: 2, coldTolerance: 2, popularIn: ['IT', 'US', 'ES', 'FR', 'UK'], description: 'Ancient lapdog — gentle and devoted. Fragile and high-maintenance grooming.' },
+      { id: 'chihuahua', name: 'Chihuahua', origin: 'Mexico', size: 'Toy', weight: '1.5-3 kg', height: '15-23 cm', lifespan: '14-16 years', coat: 'Smooth or longhaired', shedding: 2, drooling: 1, colors: 'Many — fawn, black, chocolate, cream, merle', trainability: 3, intelligence: 3, energy: 3, playfulness: 4, affection: 5, independence: 2, stubbornness: 4, preyDrive: 2, barking: 5, watchdog: 5, strangerFriendly: 1, kidFriendly: 1, dogFriendly: 2, catFriendly: 2, firstTimer: 3, apartment: 5, aloneTolerance: 2, exercise: '30 min/day', mentalNeeds: 3, groomingFreq: 'Weekly', groomingCost: 15, trainingDifficulty: 3, housetraining: 5, healthIssues: 'Patellar luxation, dental, tracheal collapse, hydrocephalus, heart issues', vetCosts: 2, insuranceBand: 35, foodConsumption: 'Very low', purchasePrice: 800, rescueAvailability: 5, heatTolerance: 3, coldTolerance: 1, popularIn: ['US', 'UK', 'ES', 'IT', 'FR'], description: 'Big personalities in tiny bodies. Often badly socialised — train them like real dogs.' },
+      { id: 'rottweiler', name: 'Rottweiler', origin: 'Germany', size: 'Large', weight: '35-60 kg', height: '56-69 cm', lifespan: '8-10 years', coat: 'Short, double coat', shedding: 3, drooling: 4, colors: 'Black with rust markings', trainability: 4, intelligence: 4, energy: 3, playfulness: 3, affection: 5, independence: 3, stubbornness: 3, preyDrive: 3, barking: 2, watchdog: 5, strangerFriendly: 2, kidFriendly: 4, dogFriendly: 2, catFriendly: 2, firstTimer: 1, apartment: 1, aloneTolerance: 3, exercise: '1.5-2 hours/day', mentalNeeds: 4, groomingFreq: 'Weekly', groomingCost: 20, trainingDifficulty: 2, housetraining: 2, healthIssues: 'Hip/elbow dysplasia, bone cancer (very high), heart disease, bloat. Sadly short-lived.', vetCosts: 4, insuranceBand: 100, foodConsumption: 'Very high', purchasePrice: 1800, rescueAvailability: 4, heatTolerance: 2, coldTolerance: 4, popularIn: ['DE', 'US', 'UK'], description: 'Loyal, powerful, deeply family-oriented. Need experienced, calm handlers.' },
+      { id: 'doberman', name: 'Doberman Pinscher', origin: 'Germany', size: 'Large', weight: '27-45 kg', height: '63-72 cm', lifespan: '10-13 years', coat: 'Short, smooth', shedding: 3, drooling: 2, colors: 'Black, red, blue, fawn (with tan)', trainability: 5, intelligence: 5, energy: 4, playfulness: 4, affection: 5, independence: 2, stubbornness: 2, preyDrive: 3, barking: 3, watchdog: 5, strangerFriendly: 3, kidFriendly: 4, dogFriendly: 3, catFriendly: 2, firstTimer: 1, apartment: 2, aloneTolerance: 1, exercise: '2 hours/day', mentalNeeds: 5, groomingFreq: 'Weekly', groomingCost: 15, trainingDifficulty: 2, housetraining: 2, healthIssues: 'DCM (dilated cardiomyopathy — over 50%), wobbler syndrome, von Willebrand\'s disease', vetCosts: 4, insuranceBand: 90, foodConsumption: 'High', purchasePrice: 2000, rescueAvailability: 3, heatTolerance: 2, coldTolerance: 2, popularIn: ['DE', 'US', 'UK'], description: 'Highly intelligent, deeply loyal "Velcro dogs". Sadly devastated by heart disease.' },
+      { id: 'bernese', name: 'Bernese Mountain Dog', origin: 'Switzerland', size: 'Giant', weight: '36-52 kg', height: '58-70 cm', lifespan: '7-10 years', coat: 'Double coat, long', shedding: 5, drooling: 3, colors: 'Tricolor (black, white, rust)', trainability: 4, intelligence: 4, energy: 3, playfulness: 3, affection: 5, independence: 2, stubbornness: 2, preyDrive: 2, barking: 2, watchdog: 3, strangerFriendly: 4, kidFriendly: 5, dogFriendly: 4, catFriendly: 3, firstTimer: 3, apartment: 1, aloneTolerance: 2, exercise: '1.5 hours/day', mentalNeeds: 3, groomingFreq: '2-3x weekly', groomingCost: 60, trainingDifficulty: 2, housetraining: 2, healthIssues: 'Cancer (extremely high — histiocytic sarcoma), hip/elbow dysplasia, bloat. Heartbreakingly short-lived.', vetCosts: 4, insuranceBand: 120, foodConsumption: 'Very high', purchasePrice: 2500, rescueAvailability: 1, heatTolerance: 1, coldTolerance: 5, popularIn: ['CH', 'DE', 'US', 'CA'], description: 'Gentle giants with devastatingly short lives — many die before 8 from cancer.' },
+      { id: 'newfie', name: 'Newfoundland', origin: 'Canada', size: 'Giant', weight: '50-70 kg', height: '63-74 cm', lifespan: '8-10 years', coat: 'Double coat, water-resistant', shedding: 5, drooling: 5, colors: 'Black, brown, grey, landseer (b&w)', trainability: 4, intelligence: 4, energy: 2, playfulness: 3, affection: 5, independence: 2, stubbornness: 2, preyDrive: 1, barking: 2, watchdog: 3, strangerFriendly: 5, kidFriendly: 5, dogFriendly: 5, catFriendly: 4, firstTimer: 3, apartment: 1, aloneTolerance: 2, exercise: '1 hour/day', mentalNeeds: 2, groomingFreq: '2-3x weekly (daily seasonal)', groomingCost: 70, trainingDifficulty: 2, housetraining: 2, healthIssues: 'Hip/elbow dysplasia, heart conditions (SAS), bloat, cystinuria, short lifespan', vetCosts: 4, insuranceBand: 130, foodConsumption: 'Enormous', purchasePrice: 2500, rescueAvailability: 1, heatTolerance: 1, coldTolerance: 5, popularIn: ['CA', 'US', 'UK', 'DE'], description: 'Saintly temperaments in massive bodies. Drool everywhere. Short lives are the hard part.' },
+      { id: 'great-dane', name: 'Great Dane', origin: 'Germany', size: 'Giant', weight: '45-90 kg', height: '71-86 cm', lifespan: '7-10 years', coat: 'Short, smooth', shedding: 3, drooling: 4, colors: 'Fawn, brindle, black, blue, harlequin, mantle', trainability: 4, intelligence: 4, energy: 2, playfulness: 4, affection: 5, independence: 2, stubbornness: 2, preyDrive: 2, barking: 2, watchdog: 4, strangerFriendly: 4, kidFriendly: 4, dogFriendly: 4, catFriendly: 3, firstTimer: 2, apartment: 2, aloneTolerance: 2, exercise: '1.5 hours/day', mentalNeeds: 3, groomingFreq: 'Weekly', groomingCost: 25, trainingDifficulty: 2, housetraining: 3, healthIssues: 'Bloat (highest risk of any breed), DCM, hip dysplasia, bone cancer. Tragically short-lived.', vetCosts: 4, insuranceBand: 130, foodConsumption: 'Enormous', purchasePrice: 2000, rescueAvailability: 2, heatTolerance: 2, coldTolerance: 3, popularIn: ['DE', 'US', 'UK'], description: '"Apollo of dogs" — sweet-natured giants. Their size dramatically shortens lifespan.' },
+      { id: 'poodle-std', name: 'Standard Poodle', origin: 'Germany/France', size: 'Large', weight: '20-32 kg', height: '46-60 cm', lifespan: '12-15 years', coat: 'Curly, low-shed', shedding: 1, drooling: 1, colors: 'Many — black, white, apricot, brown, parti', trainability: 5, intelligence: 5, energy: 4, playfulness: 5, affection: 5, independence: 2, stubbornness: 2, preyDrive: 3, barking: 3, watchdog: 3, strangerFriendly: 4, kidFriendly: 5, dogFriendly: 4, catFriendly: 4, firstTimer: 4, apartment: 2, aloneTolerance: 2, exercise: '1.5-2 hours/day', mentalNeeds: 5, groomingFreq: 'Daily + clip every 4-6 weeks', groomingCost: 75, trainingDifficulty: 1, housetraining: 1, healthIssues: 'Hip dysplasia, Addison\'s disease, bloat, epilepsy, eye conditions', vetCosts: 2, insuranceBand: 50, foodConsumption: 'Medium-High', purchasePrice: 2500, rescueAvailability: 2, heatTolerance: 3, coldTolerance: 4, popularIn: ['FR', 'DE', 'US', 'UK', 'IT'], description: 'One of the smartest, most underrated breeds. These are athletic, capable dogs.' },
+      { id: 'mixed', name: 'Crossbreed / Mongrel (Rescue)', origin: 'Everywhere', size: 'Variable', weight: 'Variable', height: 'Variable', lifespan: '12-16 years (often longer than purebreds)', coat: 'Variable', shedding: 3, drooling: 2, colors: 'Endless variety', trainability: 4, intelligence: 4, energy: 3, playfulness: 4, affection: 5, independence: 3, stubbornness: 3, preyDrive: 3, barking: 3, watchdog: 3, strangerFriendly: 4, kidFriendly: 4, dogFriendly: 4, catFriendly: 3, firstTimer: 5, apartment: 3, aloneTolerance: 3, exercise: 'Variable', mentalNeeds: 3, groomingFreq: 'Variable', groomingCost: 25, trainingDifficulty: 2, housetraining: 2, healthIssues: 'Hybrid vigour means generally healthier than purebreds', vetCosts: 2, insuranceBand: 35, foodConsumption: 'Variable', purchasePrice: 250, rescueAvailability: 5, heatTolerance: 3, coldTolerance: 3, popularIn: ['UK', 'US', 'CA', 'AU', 'IE', 'DE', 'FR', 'NL', 'ES', 'IT'], description: 'Often the healthiest, longest-lived, and most rewarding dogs.' },
+    ];
+
+    const ratingLabels = { 1: 'Very Low', 2: 'Low', 3: 'Medium', 4: 'High', 5: 'Very High' };
+
+    const RatingBar = ({ value, color = 'emerald' }) => (
+      <div className="flex gap-1">
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className={`h-2 w-4 rounded-full ${
+            i < value ? (color === 'emerald' ? 'bg-emerald-500' : 'bg-amber-500') : 'bg-stone-200'
+          }`} />
+        ))}
+      </div>
+    );
+
+    const formatCost = (n, country) => {
+      const c = countries[country];
+      const adjusted = Math.round(n * c.multiplier);
+      return `${c.currency}${adjusted.toLocaleString()}`;
+    };
+
+    function App() {
+      const [activeSection, setActiveSection] = useState('home');
+      const [country, setCountry] = useState('UK');
+      const [selectedBreeds, setSelectedBreeds] = useState([]);
+      const [drawerOpen, setDrawerOpen] = useState(false);
+      const [filters, setFilters] = useState({ size: 'any', energy: 'any', apartment: false, firstTimer: false, lowShed: false, kidFriendly: false, catFriendly: false, aloneTolerance: false, popularLocal: false });
+      const [searchTerm, setSearchTerm] = useState('');
+      const [costInputs, setCostInputs] = useState({ insurance: 50, foodMonthly: 50, grooming: 30, treats: 20, walker: 0, initial: 800, lifespan: 12 });
+      const [quizAnswers, setQuizAnswers] = useState({});
+      const c = countries[country];
+
+      const filteredBreeds = useMemo(() => breeds.filter(b => {
+        if (searchTerm && !b.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+        if (filters.size !== 'any' && !b.size.toLowerCase().includes(filters.size)) return false;
+        if (filters.energy === 'low' && b.energy > 2) return false;
+        if (filters.energy === 'medium' && b.energy !== 3) return false;
+        if (filters.energy === 'high' && b.energy < 4) return false;
+        if (filters.apartment && b.apartment < 4) return false;
+        if (filters.firstTimer && b.firstTimer < 4) return false;
+        if (filters.lowShed && b.shedding > 2) return false;
+        if (filters.kidFriendly && b.kidFriendly < 4) return false;
+        if (filters.catFriendly && b.catFriendly < 4) return false;
+        if (filters.aloneTolerance && b.aloneTolerance < 3) return false;
+        if (filters.popularLocal && !b.popularIn.includes(country)) return false;
+        return true;
+      }), [filters, searchTerm, country]);
+
+      const toggleBreed = (id) => setSelectedBreeds(prev => {
+        if (prev.includes(id)) return prev.filter(b => b !== id);
+        if (prev.length >= 3) return [...prev.slice(1), id];
+        return [...prev, id];
+      });
+
+      const compareBreeds = breeds.filter(b => selectedBreeds.includes(b.id));
+      const totalMonthly = costInputs.insurance + costInputs.foodMonthly + costInputs.grooming + costInputs.treats + costInputs.walker;
+      const totalAnnual = totalMonthly * 12 + 300;
+      const lifetimeCost = costInputs.initial + (totalAnnual * costInputs.lifespan);
+
+      const NavBtn = ({ id, icon: I, label }) => (
+        <button onClick={() => { setActiveSection(id); setDrawerOpen(false); }} className={`flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition ${activeSection === id ? 'bg-emerald-600 text-white shadow-md' : 'text-stone-700 hover:bg-stone-100'}`}>
+          <I size={16} /><span className="hidden md:inline">{label}</span>
+        </button>
+      );
+
+      const Row = ({ label, getValue, type = 'text', color = 'emerald' }) => (
+        <div className="grid grid-cols-[140px_1fr] sm:grid-cols-[180px_1fr] gap-2 py-3 border-b border-stone-100 items-center">
+          <div className="text-sm font-medium text-stone-600">{label}</div>
+          <div className="grid gap-3" style={{gridTemplateColumns: `repeat(${compareBreeds.length}, 1fr)`}}>
+            {compareBreeds.map(b => (
+              <div key={b.id} className="text-sm">
+                {type === 'rating' ? (
+                  <div className="flex flex-col gap-1">
+                    <RatingBar value={getValue(b)} color={color} />
+                    <span className="text-xs text-stone-500">{ratingLabels[getValue(b)]}</span>
+                  </div>
+                ) : type === 'currency' ? (
+                  <span className="text-stone-800">{formatCost(getValue(b), country)}</span>
+                ) : <span className="text-stone-800">{getValue(b)}</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-stone-50 via-emerald-50/30 to-amber-50/30 pb-32">
+          <header className="sticky top-0 z-40 backdrop-blur-md bg-white/80 border-b border-stone-200">
+            <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center">
+                  <PawPrint className="text-white" size={20} />
+                </div>
+                <div className="hidden sm:block">
+                  <div className="font-bold text-stone-800 leading-tight">Paws & Plan</div>
+                  <div className="text-xs text-stone-500 leading-tight">First-time owner's guide</div>
+                </div>
+              </div>
+              <nav className="flex gap-1 overflow-x-auto">
+                <NavBtn id="home" icon={Home} label="Home" />
+                <NavBtn id="quiz" icon={Sparkles} label="Quiz" />
+                <NavBtn id="compare" icon={PawPrint} label="Compare" />
+                <NavBtn id="roadmap" icon={BookOpen} label="Roadmap" />
+                <NavBtn id="cost" icon={Calculator} label="Cost" />
+                <NavBtn id="reality" icon={AlertCircle} label="Reality" />
+              </nav>
+              <select value={country} onChange={e => setCountry(e.target.value)} className="px-2 py-2 rounded-full bg-white border border-stone-200 text-sm font-medium hover:border-stone-300 cursor-pointer flex-shrink-0">
+                {Object.entries(countries).map(([code, c]) => <option key={code} value={code}>{c.flag} {code}</option>)}
+              </select>
+            </div>
+          </header>
+
+          <main className="max-w-6xl mx-auto px-4 py-8">
+            {activeSection === 'home' && (
+              <div className="space-y-12">
+                <section className="text-center py-12">
+                  <div className="inline-block mb-6 px-4 py-1.5 bg-emerald-100 text-emerald-800 rounded-full text-sm font-medium">{c.flag} For first-time dog owners in {c.name}</div>
+                  <h1 className="text-5xl sm:text-6xl font-bold text-stone-900 mb-6 tracking-tight">Bringing home your<br /><span className="bg-gradient-to-r from-emerald-600 to-amber-600 bg-clip-text text-transparent">first dog?</span></h1>
+                  <p className="text-lg text-stone-600 max-w-2xl mx-auto mb-8 leading-relaxed">Everything you need to know — from choosing the right breed for your life, to the real costs, to the steps that actually matter. Honest, thorough, and adapted for your country.</p>
+                  <div className="flex flex-wrap gap-3 justify-center">
+                    <button onClick={() => setActiveSection('quiz')} className="px-6 py-3 bg-emerald-600 text-white rounded-full font-medium hover:bg-emerald-700 shadow-md flex items-center gap-2">Take the readiness quiz <ChevronRight size={18} /></button>
+                    <button onClick={() => setActiveSection('compare')} className="px-6 py-3 bg-white text-stone-800 rounded-full font-medium hover:bg-stone-50 border border-stone-200">Compare breeds</button>
+                  </div>
+                </section>
+                <section className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    { icon: Sparkles, title: 'Readiness Quiz', desc: 'Is now actually the right time?', color: 'amber' },
+                    { icon: PawPrint, title: 'Breed Compare', desc: `${breeds.length} breeds, 35+ traits`, color: 'emerald' },
+                    { icon: BookOpen, title: 'The Roadmap', desc: 'Every step, in order', color: 'sky' },
+                    { icon: Calculator, title: 'True Costs', desc: `In ${c.currencyCode} for ${c.name}`, color: 'rose' },
+                  ].map(card => (
+                    <div key={card.title} className="bg-white rounded-2xl p-6 border border-stone-200 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${card.color === 'amber' ? 'bg-amber-100 text-amber-700' : card.color === 'emerald' ? 'bg-emerald-100 text-emerald-700' : card.color === 'sky' ? 'bg-sky-100 text-sky-700' : 'bg-rose-100 text-rose-700'}`}><card.icon size={20} /></div>
+                      <div className="font-semibold text-stone-900 mb-1">{card.title}</div>
+                      <div className="text-sm text-stone-600">{card.desc}</div>
+                    </div>
+                  ))}
+                </section>
+                <section className="bg-gradient-to-br from-emerald-50 to-amber-50 rounded-3xl p-8 border border-emerald-100">
+                  <div className="flex items-start gap-4">
+                    <Heart className="text-emerald-600 flex-shrink-0 mt-1" size={28} />
+                    <div>
+                      <h2 className="text-2xl font-bold text-stone-900 mb-3">Consider rescue first</h2>
+                      <p className="text-stone-700 leading-relaxed mb-4">Rescues in {c.name} are full of wonderful dogs of all ages, sizes, and breeds — including puppies and pedigrees. A rescue dog often costs a fraction of a breeder, comes neutered and vaccinated, and rescue staff know each dog's personality intimately.</p>
+                      <div className="flex flex-wrap gap-2 text-sm">
+                        {c.rescues.map(r => <span key={r} className="px-3 py-1 bg-white/70 rounded-full text-stone-700">{r}</span>)}
+                      </div>
+                    </div>
+                  </div>
+                </section>
+                <section className="bg-white rounded-2xl p-6 border border-stone-200">
+                  <div className="flex items-start gap-3">
+                    <Globe className="text-emerald-600 flex-shrink-0 mt-1" size={20} />
+                    <div>
+                      <h3 className="font-semibold text-stone-900 mb-2">Local notes for {c.name}</h3>
+                      <p className="text-sm text-stone-700">{c.notes}</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            )}
+
+            {activeSection === 'quiz' && (
+              <div className="max-w-2xl mx-auto">
+                <h2 className="text-3xl font-bold text-stone-900 mb-2">Are you ready right now?</h2>
+                <p className="text-stone-600 mb-8">Six honest questions. There are no wrong answers — only the right time.</p>
+                {[
+                  { q: 'How many hours a day will the dog be alone?', opts: ['0-2 hours', '3-4 hours', '5-6 hours', '7+ hours'] },
+                  { q: 'How would you describe your home?', opts: ['House with garden', 'House without garden', 'Flat with outdoor access', 'Small flat, no garden'] },
+                  { q: 'Realistically, how much exercise can you commit to daily?', opts: ['30 mins or less', '1 hour', '1-2 hours', '2+ hours, rain or shine'] },
+                  { q: `What's your monthly budget for the dog (in ${c.currencyCode})?`, opts: [`Under ${c.currency}${Math.round(80*c.multiplier)}`, `${c.currency}${Math.round(80*c.multiplier)}-${Math.round(150*c.multiplier)}`, `${c.currency}${Math.round(150*c.multiplier)}-${Math.round(250*c.multiplier)}`, `${c.currency}${Math.round(250*c.multiplier)}+`] },
+                  { q: 'Have you saved an emergency vet fund?', opts: [`Yes, ${formatCost(2000, country)}+`, `Yes, around ${formatCost(500, country)}-${formatCost(1000, country)}`, 'Not yet, but I will', 'I have insurance only'] },
+                  { q: 'How will holidays/work travel work?', opts: ['Family/friends will help', "I'll budget for boarding", 'I rarely travel', 'Honestly, not sure yet'] },
+                ].map((item, i) => (
+                  <div key={i} className="bg-white rounded-2xl p-6 border border-stone-200 mb-4">
+                    <div className="text-sm text-stone-500 mb-2">Question {i + 1}</div>
+                    <div className="font-semibold text-stone-900 mb-4">{item.q}</div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {item.opts.map((opt, j) => (
+                        <button key={j} onClick={() => setQuizAnswers({...quizAnswers, [i]: j})} className={`px-4 py-3 text-left text-sm rounded-lg border transition ${quizAnswers[i] === j ? 'border-emerald-500 bg-emerald-50 text-emerald-900' : 'border-stone-200 hover:border-stone-300 text-stone-700'}`}>{opt}</button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                {Object.keys(quizAnswers).length === 6 && (
+                  <div className="bg-gradient-to-br from-emerald-50 to-amber-50 rounded-2xl p-6 border border-emerald-200 mt-6">
+                    <h3 className="font-bold text-stone-900 mb-3 text-lg">Your honest readout</h3>
+                    <ul className="space-y-2 text-sm text-stone-700">
+                      {quizAnswers[0] >= 2 && <li className="flex gap-2"><AlertCircle size={16} className="text-amber-600 flex-shrink-0 mt-0.5" /> Long alone-times are tough on dogs. Budget for a walker or look at independent breeds.</li>}
+                      {quizAnswers[1] === 3 && <li className="flex gap-2"><AlertCircle size={16} className="text-amber-600 flex-shrink-0 mt-0.5" /> Small flats can work — but rule out high-energy breeds and barkers.</li>}
+                      {quizAnswers[2] === 0 && <li className="flex gap-2"><AlertCircle size={16} className="text-amber-600 flex-shrink-0 mt-0.5" /> Less than 30 mins a day is too little. A retired greyhound or older rescue might suit.</li>}
+                      {quizAnswers[3] === 0 && <li className="flex gap-2"><AlertCircle size={16} className="text-amber-600 flex-shrink-0 mt-0.5" /> A tight monthly budget makes vet bills very hard. Build savings first.</li>}
+                      {quizAnswers[4] === 2 && <li className="flex gap-2"><AlertCircle size={16} className="text-amber-600 flex-shrink-0 mt-0.5" /> Aim for {formatCost(1000, country)}+ saved before bringing a dog home.</li>}
+                      {quizAnswers[5] === 3 && <li className="flex gap-2"><AlertCircle size={16} className="text-amber-600 flex-shrink-0 mt-0.5" /> Sort holiday care before getting a dog, not after.</li>}
+                      {Object.values(quizAnswers).every(a => a <= 1) && <li className="flex gap-2"><CheckCircle2 size={16} className="text-emerald-600 flex-shrink-0 mt-0.5" /> You're in great shape!</li>}
+                    </ul>
+                    <button onClick={() => setActiveSection('compare')} className="mt-5 px-5 py-2.5 bg-emerald-600 text-white rounded-full text-sm font-medium hover:bg-emerald-700">Continue to breed comparison →</button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeSection === 'compare' && (
+              <div>
+                <h2 className="text-3xl font-bold text-stone-900 mb-2">Choose breeds to compare</h2>
+                <p className="text-stone-600 mb-6">{breeds.length} breeds. Tap up to three. Open the drawer at the bottom to compare.</p>
+                <div className="bg-white rounded-2xl p-5 border border-stone-200 mb-6">
+                  <div className="flex items-center gap-2 mb-4"><Filter size={16} className="text-stone-500" /><span className="font-medium text-stone-700">Filter</span></div>
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                    <div>
+                      <label className="text-xs text-stone-500 block mb-1">Size</label>
+                      <select value={filters.size} onChange={e => setFilters({...filters, size: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm bg-white">
+                        <option value="any">Any size</option><option value="toy">Toy</option><option value="small">Small</option><option value="medium">Medium</option><option value="large">Large</option><option value="giant">Giant</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-stone-500 block mb-1">Energy</label>
+                      <select value={filters.energy} onChange={e => setFilters({...filters, energy: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm bg-white">
+                        <option value="any">Any energy</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option>
+                      </select>
+                    </div>
+                    <div className="sm:col-span-2 relative">
+                      <label className="text-xs text-stone-500 block mb-1">Search</label>
+                      <Search size={14} className="absolute left-3 top-9 text-stone-400" />
+                      <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search by name..." className="w-full pl-9 pr-3 py-2 rounded-lg border border-stone-200 text-sm" />
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {[{ k: 'popularLocal', l: `Popular in ${country}` }, { k: 'apartment', l: 'Flat-friendly' }, { k: 'firstTimer', l: 'Good for first-timers' }, { k: 'lowShed', l: 'Low-shedding' }, { k: 'kidFriendly', l: 'Kid-friendly' }, { k: 'catFriendly', l: 'Cat-friendly' }, { k: 'aloneTolerance', l: 'Tolerates alone time' }].map(f => (
+                      <button key={f.k} onClick={() => setFilters({...filters, [f.k]: !filters[f.k]})} className={`px-3 py-1.5 text-xs rounded-full border transition ${filters[f.k] ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-stone-700 border-stone-200 hover:border-stone-300'}`}>{f.l}</button>
+                    ))}
+                  </div>
+                </div>
+                <div className="text-sm text-stone-600 mb-3">{filteredBreeds.length} breeds match • Selected: {selectedBreeds.length}/3</div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {filteredBreeds.map(b => (
+                    <button key={b.id} onClick={() => toggleBreed(b.id)} className={`rounded-2xl border-2 transition text-left overflow-hidden ${selectedBreeds.includes(b.id) ? 'border-emerald-500 bg-emerald-50 shadow-md' : 'border-stone-200 bg-white hover:border-stone-300 hover:shadow-sm'}`}>
+                      <div className="aspect-[4/3] overflow-hidden bg-stone-100 relative">
+                        <BreedImage breedId={b.id} className="w-full h-full" />
+                        {selectedBreeds.includes(b.id) && (
+                          <div className="absolute top-2 right-2 w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg"><CheckCircle2 size={16} className="text-white" /></div>
+                        )}
+                      </div>
+                      <div className="p-3">
+                        <div className="font-semibold text-sm text-stone-900 leading-tight">{b.name}</div>
+                        <div className="text-xs text-stone-500 mt-1">{b.size} • {b.lifespan}</div>
+                        {b.popularIn.includes(country) && <div className="text-xs text-emerald-700 font-medium mt-1">Popular in {country}</div>}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeSection === 'roadmap' && (
+              <div className="max-w-3xl mx-auto">
+                <h2 className="text-3xl font-bold text-stone-900 mb-2">The roadmap</h2>
+                <p className="text-stone-600 mb-8">Every step from "thinking about it" to "thriving with your dog".</p>
+                <div className="space-y-4">
+                  {[
+                    { phase: '1', title: 'Self-assessment (1-3 months before)', items: ['Take the readiness quiz honestly', 'Discuss with everyone in the household', `Build a ${formatCost(1000, country)}+ emergency vet fund`, 'Trial dog-walking or pet-sitting'] },
+                    { phase: '2', title: 'Choosing your dog (1-2 months before)', items: ['Use the breed comparison tool', 'Visit local rescues', 'If breeder: insist on health-tested parents, see mum, get full health certificates', 'Avoid puppy farms and online "instant" puppies'] },
+                    { phase: '3', title: 'Pre-arrival prep (2-4 weeks before)', items: ['Register with a local vet', 'Choose insurance: lifetime cover is best value', 'Buy crate, bed, bowls, lead, harness, ID tag, food', 'Dog-proof your home and garden', 'Plan first 2 weeks at home'] },
+                    { phase: '4', title: 'First days (week 1-2)', items: ['Quiet, slow introduction', 'Establish routine: feeding, toilet, sleep', 'Vet check within first week', 'Microchipping (legally required in many countries)', 'Start crate and alone-time practice'] },
+                    { phase: '5', title: 'Settling in (week 3-12)', items: ['Puppy vaccinations course (8, 10-12 weeks)', 'Book a positive-reinforcement puppy class', 'Socialisation: many places, surfaces, people, sounds', 'Continue training', 'Discuss neutering timing with your vet'] },
+                    { phase: '6', title: 'Ongoing care (lifelong)', items: ['Annual vet check + boosters', 'Monthly flea/worming treatment', 'Daily exercise and mental enrichment', 'Watch their weight', 'Senior care from ~7 years (large) or ~10 (small)'] },
+                  ].map((step, i) => (
+                    <div key={i} className="bg-white rounded-2xl p-6 border border-stone-200">
+                      <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center text-white font-bold">{step.phase}</div>
+                        <div className="flex-1">
+                          <h3 className="font-bold text-stone-900 text-lg mb-3">{step.title}</h3>
+                          <ul className="space-y-2">
+                            {step.items.map((item, j) => (
+                              <li key={j} className="flex gap-2 text-sm text-stone-700"><CheckCircle2 size={16} className="text-emerald-600 flex-shrink-0 mt-0.5" /><span>{item}</span></li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeSection === 'cost' && (
+              <div className="max-w-3xl mx-auto">
+                <h2 className="text-3xl font-bold text-stone-900 mb-2">True cost calculator</h2>
+                <p className="text-stone-600 mb-8">Adjust the sliders to see your realistic costs in {c.currencyCode} for {c.name}.</p>
+                <div className="bg-white rounded-2xl p-6 border border-stone-200 mb-6">
+                  <h3 className="font-semibold text-stone-900 mb-4">One-off & setup costs</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex justify-between text-sm mb-1"><span className="text-stone-700">Initial setup</span><span className="font-semibold">{formatCost(costInputs.initial, country)}</span></div>
+                      <input type="range" min="200" max="5000" step="100" value={costInputs.initial} onChange={e => setCostInputs({...costInputs, initial: +e.target.value})} className="w-full accent-emerald-600" />
+                      <div className="text-xs text-stone-500">Purchase/adoption fee, crate, bed, lead, bowls, initial vet/insurance</div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-sm mb-1"><span className="text-stone-700">Expected lifespan</span><span className="font-semibold">{costInputs.lifespan} years</span></div>
+                      <input type="range" min="8" max="16" step="1" value={costInputs.lifespan} onChange={e => setCostInputs({...costInputs, lifespan: +e.target.value})} className="w-full accent-emerald-600" />
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white rounded-2xl p-6 border border-stone-200 mb-6">
+                  <h3 className="font-semibold text-stone-900 mb-4">Monthly costs</h3>
+                  <div className="space-y-4">
+                    {[{ k: 'insurance', l: 'Pet insurance', mn: 0, mx: 150, h: 'Lifetime cover recommended' }, { k: 'foodMonthly', l: 'Food', mn: 15, mx: 150, h: 'Varies by breed size' }, { k: 'grooming', l: 'Grooming (avg/mo)', mn: 0, mx: 100, h: 'Some breeds need pro every 6-8 weeks' }, { k: 'treats', l: 'Treats, toys, accessories', mn: 5, mx: 60, h: 'Toys wear out, treats run out' }, { k: 'walker', l: 'Dog walker / daycare', mn: 0, mx: 400, h: 'Hire help if you work long hours' }].map(f => (
+                      <div key={f.k}>
+                        <div className="flex justify-between text-sm mb-1"><span className="text-stone-700">{f.l}</span><span className="font-semibold">{formatCost(costInputs[f.k], country)}/mo</span></div>
+                        <input type="range" min={f.mn} max={f.mx} step="5" value={costInputs[f.k]} onChange={e => setCostInputs({...costInputs, [f.k]: +e.target.value})} className="w-full accent-emerald-600" />
+                        <div className="text-xs text-stone-500">{f.h}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-3 gap-4 mb-6">
+                  <div className="bg-gradient-to-br from-emerald-500 to-emerald-700 text-white rounded-2xl p-5"><div className="text-emerald-100 text-sm">Monthly</div><div className="text-3xl font-bold mt-1">{formatCost(totalMonthly, country)}</div></div>
+                  <div className="bg-gradient-to-br from-amber-500 to-amber-700 text-white rounded-2xl p-5"><div className="text-amber-100 text-sm">Annual</div><div className="text-3xl font-bold mt-1">{formatCost(totalAnnual, country)}</div></div>
+                  <div className="bg-gradient-to-br from-rose-500 to-rose-700 text-white rounded-2xl p-5"><div className="text-rose-100 text-sm">Lifetime</div><div className="text-3xl font-bold mt-1">{formatCost(lifetimeCost, country)}</div></div>
+                </div>
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="text-amber-700 flex-shrink-0 mt-0.5" size={20} />
+                    <div className="text-sm text-amber-900"><strong>Reality check:</strong> This doesn't include emergency vet bills (which can reach {formatCost(10000, country)}+), boarding, training classes, or end-of-life care. Lifetime costs commonly exceed {formatCost(20000, country)}.</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeSection === 'reality' && (
+              <div className="max-w-3xl mx-auto">
+                <h2 className="text-3xl font-bold text-stone-900 mb-2">The honest reality</h2>
+                <p className="text-stone-600 mb-8">The things most websites won't tell you. Read this before you commit.</p>
+                <div className="grid gap-4">
+                  {[
+                    { title: 'The first 3 weeks are hard', text: 'Almost every new owner has moments of "what have I done?" That\'s normal. House-training accidents, broken sleep, separation anxiety, and chewed shoes are all part of week one. It gets better — but expect the dip.' },
+                    { title: 'You will plan your life around them', text: 'Holidays, weekends away, late nights, dinners out — every single one needs a plan. This is the biggest lifestyle change people underestimate.' },
+                    { title: 'Vet bills can be huge and sudden', text: 'A torn cruciate ligament, bloat surgery, or cancer treatment can each cost thousands. Without insurance, owners are sometimes forced into impossible decisions.' },
+                    { title: 'Behavioural problems are normal — and fixable', text: 'Pulling, recall failures, reactivity, fear of fireworks. Most dogs have something. A good positive-reinforcement trainer is worth every penny. Avoid anyone using "dominance" or shock collars.' },
+                    { title: 'Adolescence is real and brutal', text: 'Around 6-18 months, your sweet puppy will seem to forget everything. They\'ll test boundaries, ignore recall, become fearful. This is when most dogs are surrendered. Persist — it passes.' },
+                    { title: 'Two dogs is not "twice the work" — it\'s more', text: '"They\'ll keep each other company" is a myth. They might also teach each other bad habits and double your costs. Get one dog properly settled (1-2 years) first.' },
+                    { title: 'They will change your home', text: 'Mud. Hair. Scratched floors. Chewed table legs. A faint dog smell you stop noticing. White sofas become a memory.' },
+                    { title: 'The end is the price of love', text: 'Dogs live 10-15 years. The grief at the end is profound, but every owner will tell you it was worth it. Commit fully, knowing the whole shape of it.' },
+                  ].map((item, i) => (
+                    <div key={i} className="bg-white rounded-2xl p-5 border border-stone-200">
+                      <h3 className="font-bold text-stone-900 mb-2 flex items-center gap-2"><span className="w-6 h-6 rounded-full bg-amber-100 text-amber-700 text-sm flex items-center justify-center font-bold">{i + 1}</span>{item.title}</h3>
+                      <p className="text-sm text-stone-700 leading-relaxed pl-8">{item.text}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-8 bg-gradient-to-br from-emerald-50 to-amber-50 rounded-2xl p-6 border border-emerald-200">
+                  <div className="flex items-start gap-3">
+                    <Heart className="text-emerald-600 flex-shrink-0 mt-1" size={24} />
+                    <div>
+                      <h3 className="font-bold text-stone-900 mb-2">And yet —</h3>
+                      <p className="text-stone-700 leading-relaxed">Owning a dog is one of the most rewarding things many people ever do. The companionship, the laughter, the long muddy walks, the way they greet you like you've been gone a year when you've been gone twenty minutes — it's real, and it changes you. Just go in eyes open.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </main>
+
+          {selectedBreeds.length > 0 && !drawerOpen && (
+            <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t-2 border-emerald-500 shadow-2xl">
+              <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
+                <div className="flex -space-x-3 flex-shrink-0">
+                  {compareBreeds.map(b => <div key={b.id} className="w-10 h-10 rounded-full overflow-hidden border-2 border-white bg-stone-100"><BreedImage breedId={b.id} className="w-full h-full" /></div>)}
+                  {[...Array(3 - compareBreeds.length)].map((_, i) => <div key={`e${i}`} className="w-10 h-10 rounded-full border-2 border-dashed border-stone-300 bg-stone-50 flex items-center justify-center"><PawPrint size={14} className="text-stone-300" /></div>)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-semibold text-stone-900 text-sm truncate">{compareBreeds.length === 1 ? compareBreeds[0].name : compareBreeds.length === 2 ? `${compareBreeds[0].name} vs ${compareBreeds[1].name}` : `${compareBreeds.length} breeds selected`}</div>
+                  <div className="text-xs text-stone-500">{selectedBreeds.length}/3 selected</div>
+                </div>
+                <button onClick={() => setDrawerOpen(true)} className="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-full hover:bg-emerald-700 flex-shrink-0">Compare →</button>
+                <button onClick={() => setSelectedBreeds([])} className="w-9 h-9 rounded-full hover:bg-stone-100 flex items-center justify-center text-stone-500 flex-shrink-0"><X size={18} /></button>
+              </div>
+            </div>
+          )}
+
+          {drawerOpen && (
+            <div className="fixed inset-0 z-50 bg-black/50" onClick={() => setDrawerOpen(false)}>
+              <div className="absolute inset-x-0 bottom-0 top-12 bg-white rounded-t-3xl shadow-2xl flex flex-col" onClick={e => e.stopPropagation()}>
+                <div className="flex items-center justify-between px-5 py-4 border-b border-stone-200 flex-shrink-0">
+                  <div>
+                    <h3 className="font-bold text-stone-900 text-lg">Breed comparison</h3>
+                    <p className="text-xs text-stone-500">{compareBreeds.length} {compareBreeds.length === 1 ? 'breed' : 'breeds'} selected</p>
+                  </div>
+                  <button onClick={() => setDrawerOpen(false)} className="w-10 h-10 rounded-full hover:bg-stone-100 flex items-center justify-center text-stone-600"><X size={22} /></button>
+                </div>
+                <div className="flex-1 overflow-y-auto">
+                  <div className="max-w-6xl mx-auto p-4">
+                    {compareBreeds.length < 2 && <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4"><p className="text-sm text-amber-900">Select at least 2 breeds to compare. You can choose up to 3.</p></div>}
+                    <div className="grid gap-3 mb-6" style={{gridTemplateColumns: `repeat(${Math.max(compareBreeds.length, 1)}, 1fr)`}}>
+                      {compareBreeds.map(b => (
+                        <div key={b.id} className="bg-stone-50 rounded-xl p-3 relative">
+                          <button onClick={() => toggleBreed(b.id)} className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white shadow-sm hover:bg-rose-50 hover:text-rose-600 flex items-center justify-center text-stone-400 z-10"><X size={14} /></button>
+                          <div className="aspect-[4/3] rounded-lg overflow-hidden bg-stone-100 mb-2"><BreedImage breedId={b.id} className="w-full h-full" /></div>
+                          <div className="font-semibold text-sm text-stone-900 leading-tight pr-6">{b.name}</div>
+                          <div className="text-xs text-stone-500 mt-0.5">{b.origin}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {compareBreeds.length >= 1 && (
+                      <div className="bg-white rounded-xl border border-stone-200 p-4">
+                        <div className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">Physical</div>
+                        <Row label="Size" getValue={b => b.size} /><Row label="Weight" getValue={b => b.weight} /><Row label="Height" getValue={b => b.height} /><Row label="Lifespan" getValue={b => b.lifespan} /><Row label="Coat type" getValue={b => b.coat} /><Row label="Shedding" getValue={b => b.shedding} type="rating" /><Row label="Drooling" getValue={b => b.drooling} type="rating" /><Row label="Colours" getValue={b => b.colors} />
+                        <div className="text-xs font-bold text-emerald-700 uppercase tracking-wider mt-6 mb-1">Temperament</div>
+                        <Row label="Trainability" getValue={b => b.trainability} type="rating" /><Row label="Intelligence" getValue={b => b.intelligence} type="rating" /><Row label="Energy" getValue={b => b.energy} type="rating" /><Row label="Playfulness" getValue={b => b.playfulness} type="rating" /><Row label="Affection" getValue={b => b.affection} type="rating" /><Row label="Independence" getValue={b => b.independence} type="rating" /><Row label="Stubbornness" getValue={b => b.stubbornness} type="rating" color="amber" /><Row label="Prey drive" getValue={b => b.preyDrive} type="rating" color="amber" /><Row label="Barking" getValue={b => b.barking} type="rating" color="amber" /><Row label="Watchdog" getValue={b => b.watchdog} type="rating" />
+                        <div className="text-xs font-bold text-emerald-700 uppercase tracking-wider mt-6 mb-1">Compatibility</div>
+                        <Row label="Strangers" getValue={b => b.strangerFriendly} type="rating" /><Row label="With kids" getValue={b => b.kidFriendly} type="rating" /><Row label="With dogs" getValue={b => b.dogFriendly} type="rating" /><Row label="With cats" getValue={b => b.catFriendly} type="rating" /><Row label="First-timer" getValue={b => b.firstTimer} type="rating" /><Row label="Flat-friendly" getValue={b => b.apartment} type="rating" /><Row label="Alone time" getValue={b => b.aloneTolerance} type="rating" />
+                        <div className="text-xs font-bold text-emerald-700 uppercase tracking-wider mt-6 mb-1">Care</div>
+                        <Row label="Exercise" getValue={b => b.exercise} /><Row label="Mental needs" getValue={b => b.mentalNeeds} type="rating" /><Row label="Grooming" getValue={b => b.groomingFreq} /><Row label="Grooming/mo" getValue={b => b.groomingCost} type="currency" /><Row label="Training difficulty" getValue={b => b.trainingDifficulty} type="rating" color="amber" /><Row label="Housetraining" getValue={b => b.housetraining} type="rating" color="amber" />
+                        <div className="text-xs font-bold text-emerald-700 uppercase tracking-wider mt-6 mb-1">Health & cost</div>
+                        <Row label="Health issues" getValue={b => b.healthIssues} /><Row label="Vet costs" getValue={b => '£'.repeat(b.vetCosts)} /><Row label="Insurance/mo" getValue={b => b.insuranceBand} type="currency" /><Row label="Food intake" getValue={b => b.foodConsumption} /><Row label="Purchase price" getValue={b => b.purchasePrice} type="currency" /><Row label="Rescue availability" getValue={b => b.rescueAvailability} type="rating" />
+                        <div className="text-xs font-bold text-emerald-700 uppercase tracking-wider mt-6 mb-1">Climate</div>
+                        <Row label="Heat tolerance" getValue={b => b.heatTolerance} type="rating" /><Row label="Cold tolerance" getValue={b => b.coldTolerance} type="rating" />
+                        <div className="text-xs font-bold text-emerald-700 uppercase tracking-wider mt-6 mb-1">Summary</div>
+                        <Row label="Description" getValue={b => b.description} />
+                        <div className="h-4"></div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
