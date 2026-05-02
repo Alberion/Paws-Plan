@@ -340,9 +340,9 @@
         </button>
       );
 
-      const Row = ({ label, getValue, type = 'text', color = 'emerald' }) => (
-        <div className="grid grid-cols-[140px_1fr] sm:grid-cols-[180px_1fr] gap-2 py-3 border-b border-stone-100 items-center">
-          <div className="text-sm font-medium text-stone-600">{label}</div>
+      const Row = ({ label, getValue, type = 'text', color = 'emerald', suffix = '', bold = false }) => (
+        <div className={`grid grid-cols-[140px_1fr] sm:grid-cols-[180px_1fr] gap-2 py-3 border-b border-stone-100 items-center ${bold ? 'bg-stone-50 -mx-4 px-4' : ''}`}>
+          <div className={`text-sm ${bold ? 'font-semibold text-stone-900' : 'font-medium text-stone-600'}`}>{label}</div>
           <div className="grid gap-3" style={{gridTemplateColumns: `repeat(${compareBreeds.length}, 1fr)`}}>
             {compareBreeds.map(b => (
               <div key={b.id} className="text-sm">
@@ -352,13 +352,28 @@
                     <span className="text-xs text-stone-500">{ratingLabels[getValue(b)]}</span>
                   </div>
                 ) : type === 'currency' ? (
-                  <span className="text-stone-800">{formatCost(getValue(b), country)}</span>
-                ) : <span className="text-stone-800">{getValue(b)}</span>}
+                  <span className={bold ? 'font-bold text-stone-900' : 'text-stone-800'}>{formatCost(getValue(b), country)}{suffix}</span>
+                ) : <span className={bold ? 'font-bold text-stone-900' : 'text-stone-800'}>{getValue(b)}</span>}
               </div>
             ))}
           </div>
         </div>
       );
+
+      const [compareSectionsOpen, setCompareSectionsOpen] = useState({ physical: true, temperament: true, compatibility: true, care: true, health: true, costs: true, climate: true, summary: true });
+      const toggleCompareSection = (k) => setCompareSectionsOpen(prev => ({ ...prev, [k]: !prev[k] }));
+      const CompareSection = ({ k, title, children }) => {
+        const open = compareSectionsOpen[k];
+        return (
+          <div className="bg-white rounded-xl border border-stone-200 mb-3 overflow-hidden">
+            <button onClick={() => toggleCompareSection(k)} className="w-full px-4 py-3 bg-stone-50 hover:bg-stone-100 transition flex items-center justify-between">
+              <h3 className="text-xs font-bold text-emerald-700 uppercase tracking-wider">{title}</h3>
+              <ChevronRight size={16} className={`text-stone-400 transition-transform ${open ? 'rotate-90' : ''}`} />
+            </button>
+            {open && <div className="px-4">{children}</div>}
+          </div>
+        );
+      };
 
       return (
         <div className="min-h-screen bg-gradient-to-br from-stone-50 via-emerald-50/30 to-amber-50/30 pb-32">
@@ -779,23 +794,43 @@
                       </div>
                     </div>
                     {compareBreeds.length >= 1 && (
-                      <div className="bg-white rounded-xl border border-stone-200 p-4">
-                        <div className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">Physical</div>
-                        <Row label="Size" getValue={b => b.size} /><Row label="Weight" getValue={b => b.weight} /><Row label="Height" getValue={b => b.height} /><Row label="Lifespan" getValue={b => b.lifespan} /><Row label="Coat type" getValue={b => b.coat} /><Row label="Shedding" getValue={b => b.shedding} type="rating" /><Row label="Drooling" getValue={b => b.drooling} type="rating" /><Row label="Colours" getValue={b => b.colors} />
-                        <div className="text-xs font-bold text-emerald-700 uppercase tracking-wider mt-6 mb-1">Temperament</div>
-                        <Row label="Trainability" getValue={b => b.trainability} type="rating" /><Row label="Intelligence" getValue={b => b.intelligence} type="rating" /><Row label="Energy" getValue={b => b.energy} type="rating" /><Row label="Playfulness" getValue={b => b.playfulness} type="rating" /><Row label="Affection" getValue={b => b.affection} type="rating" /><Row label="Independence" getValue={b => b.independence} type="rating" /><Row label="Stubbornness" getValue={b => b.stubbornness} type="rating" color="amber" /><Row label="Prey drive" getValue={b => b.preyDrive} type="rating" color="amber" /><Row label="Barking" getValue={b => b.barking} type="rating" color="amber" /><Row label="Watchdog" getValue={b => b.watchdog} type="rating" />
-                        <div className="text-xs font-bold text-emerald-700 uppercase tracking-wider mt-6 mb-1">Compatibility</div>
-                        <Row label="Strangers" getValue={b => b.strangerFriendly} type="rating" /><Row label="With kids" getValue={b => b.kidFriendly} type="rating" /><Row label="With dogs" getValue={b => b.dogFriendly} type="rating" /><Row label="With cats" getValue={b => b.catFriendly} type="rating" /><Row label="First-timer" getValue={b => b.firstTimer} type="rating" /><Row label="Flat-friendly" getValue={b => b.apartment} type="rating" /><Row label="Alone time" getValue={b => b.aloneTolerance} type="rating" />
-                        <div className="text-xs font-bold text-emerald-700 uppercase tracking-wider mt-6 mb-1">Care</div>
-                        <Row label="Exercise" getValue={b => b.exercise} /><Row label="Mental needs" getValue={b => b.mentalNeeds} type="rating" /><Row label="Grooming" getValue={b => b.groomingFreq} /><Row label="Grooming/mo" getValue={b => b.groomingCost} type="currency" /><Row label="Training difficulty" getValue={b => b.trainingDifficulty} type="rating" color="amber" /><Row label="Housetraining" getValue={b => b.housetraining} type="rating" color="amber" />
-                        <div className="text-xs font-bold text-emerald-700 uppercase tracking-wider mt-6 mb-1">Health & cost</div>
-                        <Row label="Health issues" getValue={b => b.healthIssues} /><Row label="Vet costs" getValue={b => '£'.repeat(b.vetCosts)} /><Row label="Insurance/mo" getValue={b => b.insuranceBand} type="currency" /><Row label="Food intake" getValue={b => b.foodConsumption} /><Row label="Purchase price" getValue={b => b.purchasePrice} type="currency" /><Row label="Rescue availability" getValue={b => b.rescueAvailability} type="rating" />
-                        <div className="text-xs font-bold text-emerald-700 uppercase tracking-wider mt-6 mb-1">Climate</div>
-                        <Row label="Heat tolerance" getValue={b => b.heatTolerance} type="rating" /><Row label="Cold tolerance" getValue={b => b.coldTolerance} type="rating" />
-                        <div className="text-xs font-bold text-emerald-700 uppercase tracking-wider mt-6 mb-1">Summary</div>
-                        <Row label="Description" getValue={b => b.description} />
+                      <>
+                        <CompareSection k="physical" title="Physical">
+                          <Row label="Size" getValue={b => b.size} /><Row label="Weight" getValue={b => b.weight} /><Row label="Height" getValue={b => b.height} /><Row label="Lifespan" getValue={b => b.lifespan} /><Row label="Coat type" getValue={b => b.coat} /><Row label="Shedding" getValue={b => b.shedding} type="rating" /><Row label="Drooling" getValue={b => b.drooling} type="rating" /><Row label="Colours" getValue={b => b.colors} />
+                        </CompareSection>
+                        <CompareSection k="temperament" title="Temperament">
+                          <Row label="Trainability" getValue={b => b.trainability} type="rating" /><Row label="Intelligence" getValue={b => b.intelligence} type="rating" /><Row label="Energy" getValue={b => b.energy} type="rating" /><Row label="Playfulness" getValue={b => b.playfulness} type="rating" /><Row label="Affection" getValue={b => b.affection} type="rating" /><Row label="Independence" getValue={b => b.independence} type="rating" /><Row label="Stubbornness" getValue={b => b.stubbornness} type="rating" color="amber" /><Row label="Prey drive" getValue={b => b.preyDrive} type="rating" color="amber" /><Row label="Barking" getValue={b => b.barking} type="rating" color="amber" /><Row label="Watchdog" getValue={b => b.watchdog} type="rating" />
+                        </CompareSection>
+                        <CompareSection k="compatibility" title="Compatibility">
+                          <Row label="Strangers" getValue={b => b.strangerFriendly} type="rating" /><Row label="With kids" getValue={b => b.kidFriendly} type="rating" /><Row label="With dogs" getValue={b => b.dogFriendly} type="rating" /><Row label="With cats" getValue={b => b.catFriendly} type="rating" /><Row label="First-timer" getValue={b => b.firstTimer} type="rating" /><Row label="Flat-friendly" getValue={b => b.apartment} type="rating" /><Row label="Alone time" getValue={b => b.aloneTolerance} type="rating" />
+                        </CompareSection>
+                        <CompareSection k="care" title="Care">
+                          <Row label="Exercise" getValue={b => b.exercise} /><Row label="Mental needs" getValue={b => b.mentalNeeds} type="rating" /><Row label="Grooming" getValue={b => b.groomingFreq} /><Row label="Training difficulty" getValue={b => b.trainingDifficulty} type="rating" color="amber" /><Row label="Housetraining" getValue={b => b.housetraining} type="rating" color="amber" />
+                        </CompareSection>
+                        <CompareSection k="health" title="Health">
+                          <Row label="Health issues" getValue={b => b.healthIssues} /><Row label="Vet costs" getValue={b => '£'.repeat(b.vetCosts)} /><Row label="Rescue availability" getValue={b => b.rescueAvailability} type="rating" />
+                        </CompareSection>
+                        <CompareSection k="costs" title={`Costs in ${countries[country].currencyCode}`}>
+                          <Row label="Purchase / adoption" getValue={b => b.purchasePrice} type="currency" />
+                          <Row label="Setup essentials" getValue={() => computeBreakdown(compareBreeds[0]).setupExtras} type="currency" />
+                          <Row label="Total upfront" getValue={b => computeBreakdown(b).initial} type="currency" bold />
+                          <Row label="Insurance" getValue={b => computeBreakdown(b).insurance} type="currency" suffix="/mo" />
+                          <Row label="Food" getValue={b => computeBreakdown(b).food} type="currency" suffix="/mo" />
+                          <Row label="Grooming" getValue={b => computeBreakdown(b).grooming} type="currency" suffix="/mo" />
+                          <Row label="Treats & toys" getValue={b => computeBreakdown(b).treats} type="currency" suffix="/mo" />
+                          {compareBreeds.some(b => computeBreakdown(b).walker > 0) && <Row label="Walker / daycare" getValue={b => computeBreakdown(b).walker} type="currency" suffix="/mo" />}
+                          <Row label="Monthly total" getValue={b => computeBreakdown(b).monthly} type="currency" suffix="/mo" bold />
+                          <Row label="Preventive vet" getValue={b => computeBreakdown(b).vetAnnual} type="currency" suffix="/yr" />
+                          <Row label="Annual total" getValue={b => computeBreakdown(b).annual} type="currency" suffix="/yr" bold />
+                        </CompareSection>
+                        <CompareSection k="climate" title="Climate">
+                          <Row label="Heat tolerance" getValue={b => b.heatTolerance} type="rating" /><Row label="Cold tolerance" getValue={b => b.coldTolerance} type="rating" />
+                        </CompareSection>
+                        <CompareSection k="summary" title="Summary">
+                          <Row label="Description" getValue={b => b.description} />
+                        </CompareSection>
                         <div className="h-4"></div>
-                      </div>
+                      </>
                     )}
                   </div>
                 </div>
