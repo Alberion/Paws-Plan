@@ -261,25 +261,41 @@
       const defaultFilters = { size: 'any', energy: 'any', apartment: false, firstTimer: false, lowShed: false, kidFriendly: false, catFriendly: false, aloneTolerance: false, popularLocal: false };
       const [filters, setFilters] = useState(defaultFilters);
       const [searchTerm, setSearchTerm] = useState('');
+      const [sortBy, setSortBy] = useState('name-asc');
       const [costInputs, setCostInputs] = useState({ insurance: 50, foodMonthly: 50, grooming: 30, treats: 20, walker: 0, initial: 800, lifespan: 12 });
       const [quizAnswers, setQuizAnswers] = useState({});
       const c = countries[country];
 
-      const filteredBreeds = useMemo(() => breeds.filter(b => {
-        if (searchTerm && !b.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-        if (filters.size !== 'any' && !b.size.toLowerCase().includes(filters.size)) return false;
-        if (filters.energy === 'low' && b.energy > 2) return false;
-        if (filters.energy === 'medium' && b.energy !== 3) return false;
-        if (filters.energy === 'high' && b.energy < 4) return false;
-        if (filters.apartment && b.apartment < 4) return false;
-        if (filters.firstTimer && b.firstTimer < 4) return false;
-        if (filters.lowShed && b.shedding > 2) return false;
-        if (filters.kidFriendly && b.kidFriendly < 4) return false;
-        if (filters.catFriendly && b.catFriendly < 4) return false;
-        if (filters.aloneTolerance && b.aloneTolerance < 3) return false;
-        if (filters.popularLocal && !b.popularIn.includes(country)) return false;
-        return true;
-      }), [filters, searchTerm, country]);
+      const filteredBreeds = useMemo(() => {
+        const sizeOrder = { 'toy': 1, 'small': 2, 'small-medium': 3, 'medium': 4, 'medium-large': 5, 'large': 6, 'giant': 7, 'variable': 99 };
+        const lifespanMax = (s) => { const m = s.match(/(\d+)\s*-\s*(\d+)/); return m ? parseInt(m[2]) : 0; };
+        const list = breeds.filter(b => {
+          if (searchTerm && !b.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+          if (filters.size !== 'any' && !b.size.toLowerCase().includes(filters.size)) return false;
+          if (filters.energy === 'low' && b.energy > 2) return false;
+          if (filters.energy === 'medium' && b.energy !== 3) return false;
+          if (filters.energy === 'high' && b.energy < 4) return false;
+          if (filters.apartment && b.apartment < 4) return false;
+          if (filters.firstTimer && b.firstTimer < 4) return false;
+          if (filters.lowShed && b.shedding > 2) return false;
+          if (filters.kidFriendly && b.kidFriendly < 4) return false;
+          if (filters.catFriendly && b.catFriendly < 4) return false;
+          if (filters.aloneTolerance && b.aloneTolerance < 3) return false;
+          if (filters.popularLocal && !b.popularIn.includes(country)) return false;
+          return true;
+        });
+        const cmpName = (a, b) => a.name.localeCompare(b.name);
+        const sorters = {
+          'name-asc': cmpName,
+          'name-desc': (a, b) => b.name.localeCompare(a.name),
+          'size-asc': (a, b) => (sizeOrder[a.size.toLowerCase()] || 50) - (sizeOrder[b.size.toLowerCase()] || 50) || cmpName(a, b),
+          'size-desc': (a, b) => (sizeOrder[b.size.toLowerCase()] || 50) - (sizeOrder[a.size.toLowerCase()] || 50) || cmpName(a, b),
+          'lifespan-desc': (a, b) => lifespanMax(b.lifespan) - lifespanMax(a.lifespan) || cmpName(a, b),
+          'popular': (a, b) => (b.popularIn.includes(country) - a.popularIn.includes(country)) || cmpName(a, b),
+          'first-timer': (a, b) => (b.firstTimer - a.firstTimer) || cmpName(a, b),
+        };
+        return [...list].sort(sorters[sortBy] || cmpName);
+      }, [filters, searchTerm, country, sortBy]);
 
       const toggleBreed = (id) => setSelectedBreeds(prev => {
         if (prev.includes(id)) return prev.filter(b => b !== id);
@@ -450,6 +466,15 @@
                         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
                         <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search breeds..." className="w-full pl-9 pr-3 py-2 rounded-lg border border-stone-200 text-sm" />
                       </div>
+                      <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="px-3 py-2 rounded-lg border border-stone-200 text-sm bg-white text-stone-700 hover:bg-stone-50 cursor-pointer">
+                        <option value="name-asc">Name A→Z</option>
+                        <option value="name-desc">Name Z→A</option>
+                        <option value="size-asc">Size: small → large</option>
+                        <option value="size-desc">Size: large → small</option>
+                        <option value="lifespan-desc">Longest lifespan</option>
+                        <option value="popular">Popular in {country}</option>
+                        <option value="first-timer">Best for first-timers</option>
+                      </select>
                       <button onClick={() => setFilterDrawerOpen(true)} className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-stone-200 text-sm font-medium text-stone-700 hover:bg-stone-50">
                         <Filter size={14} /> Filters
                         {activeChips.length > 0 && <span className="bg-emerald-600 text-white rounded-full px-1.5 text-[11px] font-semibold leading-tight">{activeChips.length}</span>}
