@@ -709,7 +709,7 @@
                           </div>
                           <div className="grid gap-2 sm:gap-3" style={{gridTemplateColumns: `repeat(${Math.max(compareBreeds.length, 1)}, minmax(0, 1fr))`}}>
                             {compareBreeds.map(b => (
-                              <div key={b.id} className="flex items-center gap-1.5 bg-stone-50 rounded-lg p-1 sm:p-1.5 pr-5 sm:pr-6 relative min-w-0">
+                              <div key={b.id} className="flex items-center gap-1.5 bg-stone-50 rounded-lg p-1 sm:p-1.5 pr-5 sm:pr-6 relative min-w-0 h-full min-h-[44px] sm:min-h-[60px]">
                                 <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-md overflow-hidden bg-stone-100 flex-shrink-0 hidden sm:block"><BreedImage breedId={b.id} className="w-full h-full" /></div>
                                 <div className="min-w-0 flex-1">
                                   <div className="font-semibold text-[11px] sm:text-xs text-stone-900 leading-tight line-clamp-2">{b.name}</div>
